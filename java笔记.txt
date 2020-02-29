@@ -1,0 +1,155 @@
+
+*本地字符流默认JBK编码
+
+
+
+函数式接口(只有一个抽象方法)	        					抽象方法
+	Function<T, R>	T：入参类型，	R：出参类型		R apply(T t)
+	Suppiler<R>     没有入参       	R：出参类型；		R get();
+	Consumer <T>	T：入参类型；	没有出参      		void accept(T t)
+	Predicate <T>   T：入参类型；	出参类型是Boolean	boolean text（T t）
+
+Stream流获取常用方法：
+	Collection  集合通过stream方法获取流
+	Stream接口的静态方法of可以获取数组对应的流
+
+
+
+Stream流常用方法：  Stream流属于管道流，只能被消费一次，一个流只能用一次
+	void forEach（Consumer <? super T>  ）;  遍历	是终结方法.使用后流不能再次使用。
+	stream<T> filter(Predicate <? super T>  );  筛选
+	<R>Stream <R> map(Function<?  super T,? super  R>   );  映射
+	Stream<T> limit(long max)；  截取前几
+	Stream<T> skip(long n);  跳过前几
+	long count();  计数
+
+方法的引用：			等效lambda表达式
+	对象名：成员方法		(参数)->对象名.成员方法(参数)
+	   类名：静态成员方法		(参数)->类名.静态成员方法(参数)
+  	 super：父类成员方法		(参数)->super.父类成员方法(参数)
+	    this：本类成员方法		(参数)->this.本类成员方法(参数)
+	构造器
+	   类名：new		(参数)->new 类名(参数)
+	 类名[]：new		(参数)->new 类名[参数](参数)
+
+反射：
+	
+	获取 类对象的方法：
+	1.Class.forName("全类名")	：将字节码文件加载进内存，返回Class对象
+		*多用于配置文件，将类名定义在配置文件中。读取文件加载类
+	2.类名.class		：通过类名的属性class获取
+		*多用于参数的传递
+	3.对象.getClass		：getClass（）方法在object类中定义者
+		*多用于对象的获取字节码的方式
+
+	同一个字节码文件(*.class)在一次程序运行过程中,只会被加载一次.不论通过哪一种方式获取的Class对象都是同一个
+	
+	class对象功能：
+		1.获取成员变量们：
+		   *Field[] getFilter()			：  获取所有public修饰的成员变量
+		   *Field getFilter(String name)		：  获取指定名称的public修饰的成员变量
+		
+		   *Field[] getDeclaredFilter()		：获取所有的成员变量
+		   *Field getDeclaredFilter(String name)	：获取指定名称的成员变量
+		
+		2.获取构造方法们		Class<?>... parameterTypes//例子：方法参数为int,那么此处参数为int.class
+		   *Constructor<?>[] getConstructors()
+		   *Constructor<T> getConstructors(Class<?>... parameterTypes)   
+		   
+		   *Constructor<?>[] getDeclaredConstructors()
+		   *Constructor<T> getDeclaredConstructors(Class<?>... parameterTypes)
+		3.获取成员方法们
+		   *Method[] getMethod()
+		   *Method getMethod(String name,Class<?>... parameterTypes)
+
+		   *Method[] getDeclaredMethod()
+		   *Method getDeclaredMethod(String name,Class<?>... parameterTypes)
+		4.获取类名
+		   *String getName()
+		5.获取类加载器
+		   *ClassLoader getClassLoader()
+		6.获取注解
+		   *<A extends Annotation>A getAnnotation(Class<A> annotationClass)//返回该注解(接口)的子类实现对象,抽象方法用(return 属性值)重写
+
+	*Field：成员变量
+	       *操作：
+		1.设置值
+		   *void set(Object obj,Object value)
+		2.获取值
+		   *get(Object obj)
+
+		3.忽略访问权限修饰符的安全检查
+		   *setAccessible(true)：暴力反射	
+	
+	*Constructor：构造方法
+	       *创建对象：
+		*T newInstance(object... initargs)
+		*setAccessible(true)：暴力反射//忽略访问权限修饰符的安全检查
+
+	*Method：成员方法
+	       *执行方法：
+		*Object invoke(Object obj,Object...args)
+		*setAccessible(true)：暴力反射//忽略此访问权限修饰符的安全检查
+
+	*ClassLoader类加载器
+	       *获取class目录下的配置文件字节流：
+		*Inputstream getResourceAsStream(String name)
+
+注解：
+	*作用分类：
+	       1.编写文档：[生成doc文档]
+	       2.代码分析：[使用反射]
+	       3.编译检查：[例如Override]
+
+	*JDK中预定的一些注解：
+	       *@Override	：检测被该注解标注的方法是否是继承自父类中(接口)的
+	       *@Deprecated	：将该注解标注的内容,已过时
+	       *@SuppressWarnings：压制警告
+
+	*自定义注解
+	       *格式：
+		元注解(描述注解的注解)
+		public @intterface 注解名称{
+			属性列表;(实际上是抽象方法)
+}
+	       *本质：注解本质上就是一个接口,该接口默认继承Annotation接口
+		*public interface 注解名称 extends java.lang.annotation.Annotation{}
+
+	       *属性：接口中的抽象方法
+		*要求：
+		     1.属性的返回值有下列取值
+			*基本数据类型
+			*String
+			*枚举
+			*注解
+			*以上类型的数组
+
+		     2.定义了属性的注解,在使用时要给属性赋值
+			1.如果定义属性时,使用default关键字给属性默认初始化值,则使用注解时,可以不进行属性的赋值.
+			2.如果只有一个属性需要赋值,并且属性的名称是value.则value可以省略,直接定义值即可
+			3.数组赋值时,使用{}包裹。如果数组只有一个元素，则{}可以省略。
+	       *元注解：用于描述注解的注解
+		*@Target：描述注解能够作用的位置
+		     *ElementType取值：
+			*TYPE：可以作用于类上
+			*METHOD：可以作用于方法上
+			*FIELD：可以作用于成员变量上
+		*@Retention:描述注解被保留的阶段
+		     *@Retention(RetentionPolicy.SOURCE):当前被描述的注解,不会保留到class字节码文件中
+		     *@Retention(RetentionPolicy.CLASS):当前被描述的注解,会保留到class字节码文件中.不会被JVM读取到
+		     *@Retention(RetentionPolicy.RUNTIME):当前被描述的注解,会保留到class字节码文件中.并被JVM读取到
+		*@Documented：描述注解是否被抽取到api文档中
+		*@Inherit：描述注解是否被子类继承
+
+	*在程序中(解析)注解：获取注解中定义的属性值
+	       1.获取注解定义的位置的对象（Class，Method，Field）
+	       2.获取指定的注解
+		*getAnnotation（class）//
+		//其实就是在内存中生成了一个该注解接口的子类实现对象，抽象方法用（return 属性值）重写
+	       3.调用注解中的抽象方法获取配置的属性值
+         小结：
+	1.大多时候我们用注解，很少自定义注解
+	2.注解给谁用？
+	         1.编译器
+	         2.给解析程序用
+	3.注解不是程序的一部分，可以理解为注解就是一个标签

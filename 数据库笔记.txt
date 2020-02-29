@@ -1,0 +1,672 @@
+ 超码:唯一表示每一个实体的一个或者多个属性
+ 候选码:最小超码
+ 选择一个候选码为主键或者主码
+
+
+
+		关键字
+ 1.DDL:数据定义语言	create，drop，alter
+ 2.DML:数据操作语言	insert，delete，update	
+ 3.DQL:数据查询语言	select，where	
+ 4.DCL:数据空值语言	grant，revoke
+
+ 1.DDL操作数据库：(CRUD)
+          1.C(create):创建
+	*创建数据库:
+	     *create database (if not exists) 数据库名称 (character set 字符集名);
+          2.R(Retrieve)查询:
+	*查询所有数据库名称:
+	     *show databases;
+	*查询某个数据库的字符集:查询某个数据库的创建语句
+	     *show create database 数据库名称;
+          3.U(update):修改
+	*修改数据库的字符集:
+	     *alter database 数据库名称 character set 字符集名称;
+          4.D(delete):删除
+	*删除数据库
+	     *drop database (if exist) 数据库名称;
+          5.使用数据库
+	*查询当前正在使用的数据库名称
+	     *select database();
+	*使用数据库
+	     *use 数据库名称;
+ 2.操作表
+          1.创建表
+	1.语法:
+	      *create table 表名(
+	      列名1 数据类型,
+	      列名2 数据类型,
+	      );
+		1.int:整数类型
+		2.double:小数类型
+		3.date:日期,只包含年月日,yyyy-MM-dd
+		4.datetime:日期,只包含年月日时分秒,yyyy-MM-dd  HH:mm:ss
+		5.timestamp:时间错类型:包含年月日时分秒,yyyy-MM-dd  HH:mm:ss
+		6.varchar:字符串
+	*复制表:
+		*create table 表名 like 被复制的表名
+          2.查询表结构
+	*desc 表名;
+          3.修改
+	*修改表名
+	      alter table 表名 rename to 新的表名
+	*修改表的字符集
+	      alter table 表名 character set 字符集名称
+	*添加一列
+	      alter table 表名 add 列名 数据类型
+	*修改名称  类型
+	      alter table 表名 change 列名 新列名 新数据类型
+	      alter table 表名 modify  列名 新数据类型
+	*删除列
+	      alter table 表名 drop  列名
+          4.删除 
+	*drop table (if exist) 表名
+------------------------------------------------------------------------------------
+ 2.DML数据操作
+          1.添加数据:
+	*insert into 表名(列名1,列名2...) values(值1,值2...) 
+	除了数字,其他类型是数据都要用引号引起来
+          2.删除数据:
+	*delete from 表名 [where 条件]
+	*truncate table 表名;---先删除表，然后再创建一个一模一样的表
+          3.修改数据:
+	*update 表名 set 列名1=值1，列名2=值2...[where];
+
+------------------------------------------------------------------------------------
+ 3.DQL数据查询
+  SQL查询：
+	select<[distinct] c1（聚合函数），c2...>	\\选择属性
+	from<r1，...>  			\\进行笛卡尔积
+	[where<condition>]			\\筛选条件
+	[group by<c1，c2，...>[having<cond2>]]	\\分组，HAVING 子句可以让我们筛选分组后的各组数据。
+	[order by<c1[desc]，[c2[desc]desc]，...]>	\\排序:  升序ASC，降序DESC
+
+ 显示内连接	表名1 inner join 表名2 
+ 左外连接 		表名1 left join 表名2
+ 右外连接 		表名1 right join 表名2
+	
+ SQL查询语句执行顺序：
+	from->wher->group(aggregate)->having->select->order by
+
+##SQL删除：				\\同查询类似，但不需要选择属性，
+	delete		
+	from<r1，...>  		\\进行笛卡尔积
+	[where<condition>]		\\筛选条件
+
+##SQL插入：
+	insert into r [(c1，c2，...)]
+	values(e1，e2...)；
+	或者
+	insert into r [(c1，c2，...)]
+	select e1，e2...from...；
+
+##SQL更新：
+	update r
+	set<c1=e1，[c2=e2，...]>
+	[wher<condition>];
+	或者
+	update r
+	set c1=case
+	when <condition> then c1的值
+	else c1的值
+	end
+##条件查询的运算符:
+     *> , <  , <= , >= , =  ,<>
+     *between ...and
+     in(集合)
+     is null
+     and   	或者    &&
+     or 	或者    ||
+     not	或       !
+     like:模糊//
+	占位符:
+	*_:单个任意字符
+	*%:多个任意字符
+##集合的比较：
+	some:存在一个
+	all：任何一个
+	r1 in r2 ：r1是否在r2集合中存在
+	r1 not in r2：r1是否不在r2集合中存在
+	exist/not exists：空关系测试
+##聚合函数：
+	1.count
+	推荐选择主键
+	2.max
+
+	3.min
+	4.sum
+	5.avg
+
+--------------------------------------------------------------------
+        
+
+##视图:(虚关系):
+	create view v （[distinct] c1，c2...）as
+	<query express>
+
+       <query express>可以是任何合法的查询表达式
+       v表示视图名
+       使用视图的目的：安全及易于使用
+       对应地，删除视图，使用命令：drop view v
+
+	当视图关系出现在查询中是，它就会被已存储的查询表表达式代替
+		
+	视图更新：向视图faculty插入一条新元组
+	       insert into faculty values（‘30765’，‘Green’，‘Music’）
+	若视图来自一个关系且属性多于视图，有两种解决方案
+	       1.拒绝插入，并向用户返回一个错误信息
+	       2.向关系插入元组（‘30765’，‘Green’，‘Music’，‘null’...）
+
+
+	可更新条件：（符合可更新逻辑）
+	       1.from子句只有一个关系
+	       2.select子句中只包含关系的属性名，不包含任何表达式、聚集或distinct申明
+	       3.任何没有出现在select子句中的属性可以取空值；即这些属性上没有not null约束，也不构成主码的一部分
+	       4.查询中不含有group by或者having子句
+	
+	更新检查：（使其同时满足选择条件）
+	       在视图定义的末尾加上with check option子句来定义视图
+
+##物化视图（materialized view）：定义视图的实际关系改变，视图也跟着改变
+	物化视图维护：（三种方式）
+	       1.当构成属兔定义的任何关系被更新时，进行视图维护（最快）
+	       2.当视图被访问时，才进行视图维护（稍慢）
+	       3.周期性地进行视图维护（在这种情况下，访问数据可能是过时的）
+
+##索引
+	create index<i-name>on<table-name>
+
+	对key进行唯一索引:
+	create unique index uni_stu_index on student(ID);//student(ID)是关系中的key
+
+##事务
+	start transaction：开启事务
+	Commit work：提交事务
+	Rollback work：回滚当前事务
+	select @@autocommit:查看事务是否自动提交 1自动,0手动
+
+	事务的四个性质：原子，一致，隔离，持久
+	事务的隔离级别:				会产生的问题
+		*read uncommitted:读未提交		脏读,不可重复读,幻读
+		*read committed:读已提交		不可重复读,幻读
+		*repeatable read:可重复读		幻读
+		*seializable:串行化			无
+	设置隔离级别:*set global transaction isolation level 隔离级别字符串
+			1.脏读:
+			2.不可重复读:
+			3.幻读:
+
+	允许多条SQL语句包含在关键字begin atomic...end之间
+
+
+          完整性约束：
+	单个关系上的约束：
+	       1.not null：非空约束
+	       2.unique候选码：唯一约束
+	       3.check（<谓词>）
+	       4.primary key：主键约束//其值不能为null,也不能重复
+
+	域约束：
+	       1.
+
+	参照完整性:
+	    外键约束
+	       constraint 外键名称 foreign key （外键列名称）references 关联表名称（主键）
+   	       删除外键约束： alter table 表名 drop foreign key 外键名称
+ 	       添加外键约束 ：alter table 表名 add constraint 外键名称 foreign key （外键列名称）references 关联表名称（主键）
+
+	       t2[α]=t1[K]
+	       r2的任意一条元组的外码值,在其子表r1中的主码必须有对应值
+	       
+	       向r2插入元组,则系统必须保证r1中存在元组t1使得t1[K]=t2[α]
+	       从r1删除元组,则系统必须计算r2中参照t1的元组集合
+		如果集合非空
+		1.删除命令报错并撤销。
+		2.要么参照t1的元组本书必须被删除（可能导致级联删除）
+	       更新同上
+
+
+	[on delete cascade]允许级联删除//若破坏完整性约束,在撤销操作,回滚
+	[on update cascade]允许级联更新
+
+	       参照完整性只在事务结束时检查
+
+	       on delete set null 级联操作,设置空值
+	       on delete set default  设置默认值
+
+
+##断言：(assertion)
+	create assertion<assertion-name> check <predicate>
+	所有x，属于(不存在x，不属于)
+
+##触发器：（trigger）
+	条件，操作
+	       用referencing new row引用更新后数据，
+	       用referencing old row引用更新前数据，	       
+
+ 	       用referencing new table和referencing old table：引用包含受影响的行的临时表   
+--------------------------------------------------------------------------------------------------
+##DCL:管理用户
+       1.添加用户:
+	*create user '用户名'@'主机名' identity by '密码';
+       2.删除用户:
+       3.修改用户密码:
+	*update user set password=password ('新密码') where user ='用户名';
+	*set password for '用户名'@'主机名' =password('新密码');
+
+	*mysql 中忘记了root用户的密码
+		1.cmd-->net stop mysql 停止mysql服务
+		2.启动无验证方式启动mysql服务:
+		3.打开新的cmd窗口,直接输入mysql命令,
+		4.use mysql
+		5.改密码
+		6.手动结束mysql.exe的进程
+       4.查询用户:
+	--1.切换到mysql数据库
+	*use mysql;
+	--2.查询user表
+	*select *from user;
+
+	*通配符:%表示可以在任意主机使用用户登录数据库
+   授权：（GRANT）
+	GRANT<privilege list>//权限列表
+	ON<relation name or view name>TO<user list>//ON数据库名称.表名 TO '用户名'@'主机名'
+	
+	查询权限:show grant for '用户名'@'主机名'
+ 	       select:查
+ 	       insert:插
+ 	       update:改
+ 	       delete:删
+ 	       references:允许声明外键
+ 	       all privilege:所有权限
+ 	       with grant option:允许授予别人权限
+
+   角色:(role)
+	创建:create role as XXX
+   权限收回:
+	REVOKE<privilege list>ON<relation name or view name> FORM '用户名'@'主机名'
+
+##审计跟踪(audit trail):
+	语句审计
+	对象审计
+
+
+##嵌入式SQL:*程序在编译前必须由一个特殊的预处理器进行处理
+-------------------------------------------------------------
+##ODBC:(Open DataBase Connectivity)
+     一个与应用程序无关的接口
+     用于应用程序与数据库服务通信的标准
+     标准定义了一个API
+	*与具体DBMS无关
+	*不需要预编译
+
+     使用ODBC访问数据库的方法:
+	ODBC API 访问
+	不同环境下提供的ODBC类,
+-----------------------------------------------------------------
+##JDBC:(Java DataBase Connectivity)
+	定义了一套操作所有关系型数据库的接口
+	产商给了数据库驱动(接口的实现类)
+
+	步骤:
+	       1.导入驱动jar包
+	       2.注册驱动
+		Class.forName("com.mysql.jdbc.Driver")
+	       3.获取数据库连接对象  connection
+		Connection  conn=DriverManager.getConnection("jdbc:mysql://localhost:3306/db3","root","root");
+	       4.定义SQL
+		String sql="SQL语句"
+	       5.获取执行SQL语句的对象 statement
+		statement stmt=conn.createStatement();
+	       6.执行SQL,接受返回结果
+		int count=stmt.executeUpdate(sql);
+	       7.处理结果
+		
+	       8.释放资源
+		stmt.close;
+		conn.close;
+
+	详解各个对象:
+		1.DriverManager:驱动管理对象
+		     1.注册驱动
+			static void registerDriver (Driver driver)
+
+		     2.获取数据库连接:
+			方法:static Connection getConnection(String URL.String user,String password)
+			参数:
+			       *url:指定连接的路径
+				*语法:jdbc:mysql://ip地址(域名):端口号/数据库名称
+				*例子:jdbc:mysql://localhost:3306/db3
+			
+		2.Connection:数据库连接对象
+			1.功能:
+			          1.获取执行sql对象
+				*Statement createstatement()
+				*PreparedStatement prepareStatement(String sql)
+			          2.事务管理:
+				*开启事务:setAutoCommit(boolean autoCommit):调用该方法设置参数为false,即开启事务
+				*提交事务:commit()
+				*回滚事务:rollback()
+		3.Statement:执行静态SQL对象
+			1.执行sql
+			          1.boolean execute(String sql):
+			          2.int executeUpdate(String sql):执行DML(insert，update，delete)语句,DDL（create，alter，drop）语句
+				返回值：影响的行数
+			          3.ResultSet executeQuery（String sql）：执行DQL(select)语句
+			2.练习(模板):
+			try{
+				//1.注册驱动
+				Class.forName("com.mysql .jdbc.Driver")
+	      			//2.获取数据库连接对象  connection
+				Connection  conn=DriverManager.getConnection("jdbc:mysql://localhost:3306/db3","root","root");
+	     			//3.定义SQL
+				String sql="SQL语句"
+	     			//4.获取执行SQL语句的对象 statement
+					statement stmt=conn.createStatement();
+	     			//5.执行SQL,接受返回结果
+				int count=stmt.executeUpdate(sql);
+	   			//6.处理结果
+				
+			}  catch(ClassNotFoundException e){
+				e.printStackTrace;
+			}  catch(SQLException e){
+				e.printStackTrace;
+			}  finally{
+				//7.释放资源
+				 if(stmt !=null){
+					try{
+					      stmt.close;
+					}catch(SQLException e){
+					      e.printStackTrace;
+					}
+				}
+				 if(conn !=null){
+					try{
+					      conn.close;
+					}catch(SQLException e){
+					      e.printStackTrace;
+					}
+				}
+			}
+			
+	    			 
+		4.ResultSet:结果集,封装查询结果
+		        *boolean next():游标向下移动一行,若移动到最后一行之后,则返回false,否则为true
+		        *Xxx getXxx():获取游标所在行的数据
+			*Xxx代表数据类型
+			*参数:
+			        1.int:代表列的编号(第几列)
+			        2.String:代表列的名称
+		        *注意
+			*使用步骤:
+			        1.游标向下移动一行
+			        2.判断是否有数据
+				while(ResultSet对象.next()){
+					ResultSet对象.getXxx();
+					...
+					}
+		        *练习:
+			*定义一个方法.查询表的数据,将其封装为对象,然后装载集合,返回.
+			      1.定义Emp类
+			      2.定义方法 public list<Emp> 
+
+		5.PreparedStatement:预编译SQL,防止SQL注入问题,并且效率更高
+			*用?作为占位符
+			*给?赋值:setXxx(?的编号，？的值)；
+
+
+##JDBC控制事务
+			
+###抽取JDBC工具类:JDBCUtils
+      public class JDBCUtils{
+	private static String url;
+	private static String user;
+	private static String password;
+	private static String diver;
+
+	static{
+	  try{
+	    //读取资源文件,获取值
+	    //1创建Properties集合类
+	    Properties properties=new Properties();
+ 	    properties.load(new FileReader(配置文件地址));
+	    //获取数据,赋值
+	    url=
+	    user=
+	    password=
+	    driver=
+	    //注册驱动
+	    Class.forName(driver);
+	  }catch(IOException e){
+	    e.printStackTrace;
+	    }
+	}
+
+		
+	public static Connection getConnection(){
+		
+
+
+	}
+	//释放资源
+    public static void close(Statement stmt, Connection conn) {
+        if (stmt != null) {
+            try {
+                stmt.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+            if (conn != null) {
+                try {
+                    conn.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }     
+           
+           
+    public static void close(ResultSet rs, Statement stmt, Connection conn){
+                if(rs != null) {
+                    try {
+                        rs.close();
+                    } catch (SQLException e) {
+                        e.printStackTrace();
+                    }
+                    if (stmt != null) {
+                        try {
+                            stmt.close();
+                        } catch (SQLException e) {
+                            e.printStackTrace();
+                        }
+                        if (conn != null) {
+                            try {
+                                conn.close();
+                            } catch (SQLException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+                }
+    }
+	//连接对象
+	pubic static Connection getConnection() throws sqlException{
+		return DriverManager.getConnection(url，user，password)；
+	}
+		
+
+
+##数据库连接池
+        C3P0:
+            步骤:
+	1.导入jar包（两个），还有数据库驱动jar包
+	2.定义配置文件
+	    *名称:c3p0.properties 或者  c3p0-config.xml
+	    *路径:直接将文件放在src目录下即可.
+	3.创建核心对象  数据库连接池对象  ComboPooledDataSource
+	4.获取连接对象：getConnection
+
+
+        Druid:
+            1.步骤:
+	1.导入jar包（1个），还有数据库驱动jar包
+	2.定义配置文件
+	    *是properties形式的
+	    *可以叫任意名称，放在任意目录下，需要自己指定
+	3.加载配置文件 
+	4.获取连接池对象：通过工厂来获取   DruidDataSourceFactory
+	5.获取连接对象：getConnection
+            
+            2.定义工具类
+	1.定义一个类
+	2.提供建泰代码块加载配置文件，初始化连接池对象
+	3.提供方法
+	       1.获取连接方法：通过数据库连接池获取连接
+        	       2.释放资源
+	       3.获取连接池的方法    
+	
+
+
+
+##Spring JDBC
+        *Spring框架对JDBC对JDBC的简单封装.提供了一个JDBCTemplate对象简化JDBC的开发
+        *步骤
+	1.导入jar包
+	2.创建JdbcTemplate对象.依赖于数据源DataSource
+	      *JdbcTemplate template = new JdbcTemplate(DataSource ds);
+	3.调用JdbcTemplate的方法来完成CRUD的操作
+		参数为（String sql，sql对应所需参数...）
+	      *int update()：执行DMl语句。增删改，返回值为影响行
+	      *queryForMap()：查询结果，将结果封装为map集合   	 //   查询的结果集长度只能是1，将 列名做列，将值做value。
+	      *queryForList()：查询结果，将结果集封装为list集合    	 //    将每一条记录封装为一个Map集合,再将Map集合封装为list集合
+	      *query()：查询结果，将结果封装为JavaBean（自定义类）集合 //     参数为（sql，new BeanPropertyRowMapper<T>(Class class)）
+	      *queryForObject()：查询结果，将结果封装为对象
+
+
+
+
+----------------------------------------------------------------------
+##数据库备份:
+	mysqldump -u用户名 -p密码 数据库名称 >保存路径
+
+
+
+
+##联系集的度
+##映射基数
+
+##E-R图
+     特化\概化
+     聚集
+------------------------------------------------------------------------------------
+
+##数据库设计
+     
+     函数依赖（FD）：α→β	//类似数学上x→f(x)
+	有t1[α]=t2[α]    能推出   t1[β]=t2[β]
+	
+	*k是关系R的超码       等效于  k→R
+	*k是关系R的候选码    等效于  k→R  且不存在k的真子集α,使得α→R
+     函数依赖集F
+
+     F+(F的闭包)
+	R中F所隐含的所有函数依赖集
+	Armstrong公理：自反律，增补律，传递律
+	补充：合并律，分解律，伪传递律（若α→β于γβ→δ，则αβ→δ）
+
+	计算：
+	        F+=F
+	        repeat
+	        	for each F+中的函数依赖f
+			对f应用自反律和增补律
+			将结果函数依赖加入F+
+		for each F+中的一对函数依赖f1和f2
+			if f1和f2可以使用传递律结合起来
+			    将结果函数依赖加入F+
+	        until F+不再变化
+	
+     属性集的闭包：//理解为属性集α可以函数对映的所有属性集
+	在函数依赖集F下由α函数确定的所有属性的集合（F下的α的闭包记做α+）
+	        ****检查函数依赖α→β是否属于F+   等效为  β是α+的子集***
+	        *计算F的闭包（F+）
+		对于每个R的子集γ，计算F下γ+，再对每一个γ+的子集S，输出函数依赖γ→S
+	α+的算法：
+	        result：=a；
+	        while（result有变化）do
+		for each β→γ in F do
+		      begin
+			if β是result的子集  then result：=result∪γ
+		      end
+	        a+=result
+
+     正则覆盖（Fc）：与F等价的“极小的”函数依赖集合
+	检测属性A∈α在α中是否无关
+		1.计算F下的(α-{A})+
+		2.是否包含β，若包含，则A是无关的
+	检测属性A∈β在β中是否无关
+		1.计算F'=（F-{α→β}）∪{α→(β-A)}下的α+
+		2.是否包含A，若包含，则A是无关的
+	**Fc的计算过程:
+		repeat
+			对F中的依赖利用利用合并规则合并
+			找出含有无关属性的函数依赖在α→β，删除其中的无关属性
+		until F不在变化
+	
+     模式R(scheme)分解：//ps:实例r(instance)
+	要求：
+	      1.原模式的所有属性在分解后都要出现   	
+	      2.无损连接分解   
+		R1∩R2→R1
+		或
+		R1∩R2→R2
+		//等效为R1,R2至少有一个是(R1∩R2)+的子集
+	      3.保持依赖
+		1.有效的检查更新操作(以确保没有违反任何FD),允许分别验证子关系
+		模型式Ri,而不需要计算分解后的关系的连接
+		2.（F1∪F2∪...∪Fn)+=F+，	ps：Fi为F+中只包含Ri重属性的函数依赖
+		*检查依赖α→β在R到R1,R2，...Rn的分解中是否得到保持的简单测试
+			result=α
+			while（result 有变化）do
+				for each 分解后的Ri
+				t=（result∩Ri)+∪Ri
+				result=result∪t
+		若result包含β中的所有属性,则α→β得到保持
+		*若对F中的每一个α→β都能有一个Ri,满足函数依赖,则该分解保持依赖
+	      4.没有冗余
+	
+范式
+      *1NF:每个属性都是原子的
+      *2NF:在1NF基础上，非码属性必须完全依赖于候选码
+      *BCNF:(分解后总是无损,但不一定保持依赖)
+	F+中所有依赖α→β（α,β都是R的子集）必须满足
+	    *α是R的超码或者是超码的子集
+	
+	检查有F关系的R是否属于BCNF只需要检查F中所有依赖
+	但是检查R分解后的关系时不能如此
+
+      *3NF:满足条件(分解后总是无损,保持依赖)
+	F+中所有依赖α→β（α,β都是R的子集）必须满足
+	*若α不是R的超码或者是超码的子集，则β-α每一个属性A都包含于R的一个候选码。
+	//3NF为BCNF的放松
+	
+	3NF分解算法:
+	令Fc是F的正则覆盖
+	i:=0;
+	for each Fc中的函数依赖α→β do{
+	     if 没有模式Rj(1<=j<=i)包含αβ
+		then begin
+			i:=i+1;
+			Ri:=(α,β)
+		end
+	      }
+	if 没有模式Rj(1<=j<=i)包含R的候选码
+		then begin
+			i:=i+1;
+			Ri:=R的任意候选码;
+		end
+	return (R1,R2,...Ri)
+
+
+      *4NF:满足条件多值依赖,其余同上
+------------------------------------------------------------------------------------

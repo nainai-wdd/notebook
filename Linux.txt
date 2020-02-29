@@ -1,0 +1,2 @@
+关机:shutdown
+关闭内存:halt
