@@ -1,0 +1,175 @@
+  #mybatis:
+     快速入门(maven工程里)
+	1.在pom.xml文件中添加mybatis坐标
+	2.编写传递数据的实体类(domin)
+	3.编写dao接口,写方法
+	4.编写dao接口的映射文件.xml
+	   <关键字 id=""(对应dao接口中的方法)
+		  parameterType="''"(参数类型全类名)
+		  resultType="" (封装类型全类名)
+		SQL语句<关键字/>
+
+		*使用ognl表达式:#{对象.对象}
+		接受简单值或者pojo属性值
+
+	5.编写SQLMapConfig.xml配置文件
+--------------------------------------------------------------------
+     使用:
+	//1.读取配置文件
+	InputStream is = Resources.getResourceAsStream("SqlMapConfig.xml");
+
+	//2.创建 SqlSessionFactory 的构建者对象
+	SqlSessionFactoryBuilder builder = new SqlSessionFactoryBuilder();
+
+	//3.使用构建者创建工厂对象 SqlSessionFactory
+	SqlSessionFactory factory = builder.build(is);
+
+	//4.使用 SqlSessionFactory 生产 SqlSession 对象
+	SqlSession session = factory.openSession();
+
+	//5.使用 SqlSession 创建 dao 接口的代理对象
+	IUserDao userDao = session.getMapper(IUserDao.class);
+
+	//6.使用代理对象执行查询所有方法
+	List<User> users = userDao.findAll();
+	for(User user : users) {
+	System.out.println(user);
+	}
+
+	//7.释放资源
+	session.close();
+	is.close();
+	
+	//*注意:模糊查询的&&在封装入参的时候加(防止SQL注入)
+--------------------------------------------------------------------	
+   parameterType配置参数:
+	*mybaits 在加载时已经把常用的数据类型注册了别名，
+	从而我们在使用时可以不写包名，而我们的是实体类并
+	没有注册别名，所以必须写全限定类名。
+
+	自定义别名：
+	在 SqlMapConfig.xml 中配置：
+	<typeAliases>
+	  <!-- 单个别名定义 --> <typeAlias alias="user" type="com.itheima.domain.User"/>
+	  <!-- 批量别名定义，扫描整个包下的类，别名为类名（首字母大写或小写都可以） --> <package 	  name="com.itheima.domain"/>
+	  <package name="其它包"/>
+	</typeAliases>
+
+
+     OGNL表达式：
+	Object Graphic Navigation Language
+	对象	图	导航	   语言
+	
+	它是通过对象的取值方法来获取数据。在写法上把get给省略了。
+	比如：我们获取用户的名称
+		类中的写法：user.getUsername();
+		OGNL表达式写法：user.username
+	*若在parameterType中已经提供了属性所属的类，所以此时不需要写对象名
+
+   resultType 配置结果类型
+	* <resultMap> 标签可以建立查询的列名和实体类的属性名称
+	不一致时建立对应关系。从而实现封装。
+	
+	type 属性：指定实体类的全限定类名
+	id 属性：给定一个唯一标识，是给查询 select 标签引用用的。
+	
+      <resultMap type="com.itheima.domain.User" id="userMap">
+	<id 	column="id"		property="userId"/>
+	<result column="username" 	property="userName"/>
+	<result column="sex" 		property="userSex"/>
+	<result column="address" 	property="userAddress"/>
+	<result column="birthday" 	property="userBirthday"/>
+      </resultMap>
+
+	id 标签:指定主键字段
+	result 标签：用于指定非主键字段
+	column 属性：用于指定数据库列名
+	property 属性：用于指定实体类属性名称
+----------------------------------------------------------------------
+   SqlMapConfig.xml配置文件:
+
+	-properties（属性）
+	   --property
+	两种方法:
+	   1.在文件里直接写<property name="" value="">
+	   2.在classpath 下定义 db.properties 文件
+	     然后在xml里配置<properties resource/url = "">
+
+		*resource配置,要求配置文件必须在类路径下
+		*url:协议+主机+端口+uri
+
+
+	-settings（全局配置参数）
+	   --setting
+	-typeAliases（类型别名）
+	   --typeAliase
+	   --package
+	-typeHandlers（类型处理器）
+	-objectFactory（对象工厂）
+	-plugins（插件）
+	-environments（环境集合属性对象）
+	  --environment（环境子属性对象）
+	     ---transactionManager（事务管理）
+	     ---dataSource（数据源）
+	-mappers（映射器）
+	  --mapper
+	  --package
+
+------------------------------------------------------------------
+   mappers（映射器）
+	<mapper resource=" " />
+	    使用相对于类路径的资源
+	    如：<mapper resource="com/itheima/dao/IUserDao.xml" />
+
+	<mapper class=" " />
+	    使用 mapper 接口类路径
+	    如：<mapper class="com.itheima.dao.UserDao"/>
+	    注意：此种方法要求 mapper 接口名称和 mapper 映射文件名称相同，且放在同一个目录中。 
+
+	<package name=""/>
+	    注册指定包下的所有 mapper 接口
+	    如：<package name="cn.itcast.mybatis.mapper"/>
+	    注意：此种方法要求 mapper 接口名称和 mapper 映射文件名称相同，且放在同一个目录中。
+
+------------------------------------------------------------------ 
+
+  连接池分类:
+	UNPOOLED:不适用连接池
+	POOLED:连接池
+	JNDI
+
+------------------------------------------------------------------
+
+  事务控制
+	在 CUD 操作中，必须通过 sqlSession.commit()方法来执行提交操作。
+	
+	若要自动提交,在创建 SqlSession 对象时传入参数true
+		session = factory.openSession(true);
+
+------------------------------------------------------------------
+
+  动态SQL
+	<if test="boolean类型值"></if>标签
+
+	<where></where>标签:标签体内有内容则自动加where
+
+	<foreach collection="ids" open="id in ( " close=")" item="uid" 
+	separator=",">
+		#{uid}
+	</foreach>
+------------------------------------------------------------------
+
+  简化编写的SQL片段
+	<!-- 抽取重复的语句代码片段 -->
+	   <sql id="defaultSql">
+		select * from user
+	    </sql>
+
+	<!-- 配置查询所有操作 -->
+	   <select id="findAll" resultType="user">
+		<include refid="defaultSql"></include>
+	   </select>
+
+------------------------------------------------------------------
+
+

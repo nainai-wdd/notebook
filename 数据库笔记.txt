@@ -3,7 +3,8 @@
  选择一个候选码为主键或者主码
 
 
-
+	select version();
+	mysql -v
 		关键字
  1.DDL:数据定义语言	create，drop，alter
  2.DML:数据操作语言	insert，delete，update	
@@ -11,29 +12,37 @@
  4.DCL:数据空值语言	grant，revoke
 
  1.DDL操作数据库：(CRUD)
-          1.C(create):创建
+       1.C(create):创建
 	*创建数据库:
 	     *create database (if not exists) 数据库名称 (character set 字符集名);
-          2.R(Retrieve)查询:
+       2.R(Retrieve)查询:
+
 	*查询所有数据库名称:
 	     *show databases;
+
 	*查询某个数据库的字符集:查询某个数据库的创建语句
 	     *show create database 数据库名称;
-          3.U(update):修改
+
+	*查询某个库的所有表
+	     *show tables from 库名;
+
+
+       3.U(update):修改
 	*修改数据库的字符集:
 	     *alter database 数据库名称 character set 字符集名称;
-          4.D(delete):删除
+
+       4.D(delete):删除
 	*删除数据库
 	     *drop database (if exist) 数据库名称;
-          5.使用数据库
+
+       5.使用数据库
 	*查询当前正在使用的数据库名称
 	     *select database();
 	*使用数据库
 	     *use 数据库名称;
  2.操作表
-          1.创建表
-	1.语法:
-	      *create table 表名(
+     1.创建表
+	*create table 表名(
 	      列名1 数据类型,
 	      列名2 数据类型,
 	      );
@@ -43,11 +52,13 @@
 		4.datetime:日期,只包含年月日时分秒,yyyy-MM-dd  HH:mm:ss
 		5.timestamp:时间错类型:包含年月日时分秒,yyyy-MM-dd  HH:mm:ss
 		6.varchar:字符串
-	*复制表:
-		*create table 表名 like 被复制的表名
-          2.查询表结构
+     2.复制表:
+	*create table 表名 like 被复制的表名
+
+     3.查询表结构
 	*desc 表名;
-          3.修改
+
+     4.修改
 	*修改表名
 	      alter table 表名 rename to 新的表名
 	*修改表的字符集
@@ -59,27 +70,32 @@
 	      alter table 表名 modify  列名 新数据类型
 	*删除列
 	      alter table 表名 drop  列名
-          4.删除 
+     5.删除 
 	*drop table (if exist) 表名
+
 ------------------------------------------------------------------------------------
+
  2.DML数据操作
           1.添加数据:
 	*insert into 表名(列名1,列名2...) values(值1,值2...) 
 	除了数字,其他类型是数据都要用引号引起来
+
           2.删除数据:
 	*delete from 表名 [where 条件]
 	*truncate table 表名;---先删除表，然后再创建一个一模一样的表
+
           3.修改数据:
 	*update 表名 set 列名1=值1，列名2=值2...[where];
 
 ------------------------------------------------------------------------------------
+
  3.DQL数据查询
   SQL查询：
 	select<[distinct] c1（聚合函数），c2...>	\\选择属性
 	from<r1，...>  			\\进行笛卡尔积
 	[where<condition>]			\\筛选条件
 	[group by<c1，c2，...>[having<cond2>]]	\\分组，HAVING 子句可以让我们筛选分组后的各组数据。
-	[order by<c1[desc]，[c2[desc]desc]，...]>	\\排序:  升序ASC，降序DESC
+	[order by<c1[desc]，[c2[desc]desc]，...]>\\排序:  升序ASC，降序DESC
 
  显示内连接	表名1 inner join 表名2 
  左外连接 		表名1 left join 表名2
@@ -110,6 +126,7 @@
 	when <condition> then c1的值
 	else c1的值
 	end
+
 ##条件查询的运算符:
      *> , <  , <= , >= , =  ,<>
      *between ...and
@@ -122,12 +139,14 @@
 	占位符:
 	*_:单个任意字符
 	*%:多个任意字符
+
 ##集合的比较：
 	some:存在一个
 	all：任何一个
 	r1 in r2 ：r1是否在r2集合中存在
 	r1 not in r2：r1是否不在r2集合中存在
 	exist/not exists：空关系测试
+
 ##聚合函数：
 	1.count
 	推荐选择主键
