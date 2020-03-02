@@ -125,21 +125,34 @@
 		13.FORMAT() 函数用于对字段的显示进行格式化
 		  *SELECT name, url, DATE_FORMAT(Now(),'%Y-%m-%d') AS date FROM Websites;
 -------------------------------------------------------------------------------------
-    **关系代数**:
+    **关系代数**:	   ** r(R)和s(S) **	
 	1.选择运算:	select * where<condition>
 	2.投影运算:	select distinct 列名
-	3.并运算:	Select * from R Union Select * from S;
-	4.差运算:	Select * from R Except Select * fromS;
+	3.并运算:r union s
+			Select * from r Union Select * from s;	//要求同目
+
+	4.差运算:r except s	
+			Select * from r Except Select * from s;	//要求同目
+			    *经常用选择运算from r where not except s 代替
 	5.广义笛卡尔积:	
 	6.更名:
 
       附加运算:
-	1.集合交.	Select * from R Intersect Select * fromS;
+	1.集合交.	Select * from r Intersect Select * from s;  //要求同目
 	2.自然连接	
-	3.除		SELECT DISTINCT A.Name FROM R as A WHERE NOT EXISTS
-			SELECT * from S as B WHERE NOT EXISTS								(SELECT * from R as C where C.Name=A.Name and B.City=C.City))
+	3.除:	r/s = 投影R-S (r) - 投影R-S ( (投影R-S (r) 笛卡尔积 s)-投影R-S,S(r) )
+
+		结果=    候选r    - 所有不满足的(笛卡尔积-所有满足的)
+
+		案列: 
+			Select distinct A.Name from r as A 	//候选
+			  where NOT EXISTS			//剔除
+			Select * from s as B			//
+			  where NOT EXISTS										(Select * from r as C where C.Name=A.Name and B.City=C.City))
 			group by A.Name
-	4.赋值
+
+	4.赋值:
+		
 
 	查询示例:
 		1.找最大值:select account.balance from account
@@ -147,9 +160,13 @@
 			   select account.balance from account,account d where 			   			   account.balance < d.balance
 				
 			
-			
-
-
+----------------------------------------------------------------------------------------
+##集合的比较：
+	some:存在一个
+	all：任何一个
+	r1 in r2 ：r1是否在r2集合中存在
+	r1 not in r2：r1是否不在r2集合中存在
+	exist/not exists：空关系测试			
 ---------------------------------------------------------------------------------------
 ##SQL删除：				\\同查询类似，但不需要选择属性，
 	delete		
@@ -186,22 +203,6 @@
 	占位符:
 	*_:单个任意字符
 	*%:多个任意字符
-----------------------------------------------------------------------------------------
-##集合的比较：
-	some:存在一个
-	all：任何一个
-	r1 in r2 ：r1是否在r2集合中存在
-	r1 not in r2：r1是否不在r2集合中存在
-	exist/not exists：空关系测试
-----------------------------------------------------------------------------------------
-##聚合函数：
-	1.count
-	推荐选择主键
-	2.max
-
-	3.min
-	4.sum
-	5.avg
 
 ----------------------------------------------------------------------------------------
         
