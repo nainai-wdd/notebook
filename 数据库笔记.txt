@@ -102,14 +102,20 @@
  右外连接 		表名1 right join 表名2
 	
  SQL查询语句执行顺序：
-	from->wher->group(aggregate)->having->select->order by
+	
+	*-------from->wher->group(aggregate)->having->select->order by----------*
+
 **************************************************************************************
 -------------------------------------------------------------------------------------
-    *聚合函数:列名之间的运算,形成新的列,一般会取别名
+
+###函数
+	使用方式: select 函数名();	//注意 SQL中索引从1开始
+
+    *聚合函数:列名之间的运算,形成新的列,一般会取别名	//又称分组函数
 	1.自定义运算:	+,-,*/
 
-	2.常用函数:
-		1.CONCAT(): 多列相加
+	2.常用聚合函数:
+		
 		2.SUM(): 数值列的总数
 		3.MAX(): 指定列的最大值
 		4.MIN(): 指定列的最小值
@@ -119,11 +125,87 @@
 		8.AVG(): 函数返回数值列的平均值。
 
 		9.MID(列名,start,length): 函数用于从文本字段中提取字符
-		10.LEN(): 函数返回文本字段中值的长度
-		11.ROUND(column_name,decimals) 函数用于把数值字段舍入为指定的小数位数。
-		12.NOW() 函数返回当前系统的日期和时间
+		10.LENGTH(column_name) 函数返回文本字段中值的长度。
 		13.FORMAT() 函数用于对字段的显示进行格式化
 		  *SELECT name, url, DATE_FORMAT(Now(),'%Y-%m-%d') AS date FROM Websites;
+
+
+    *单行行数:	
+	1.字符函数:	//utf-8 汉字3字节  GBK汉字2字节
+		1.length(): 返回字符字节
+		2.concat():拼接字符
+		3.upper():变大写
+		4,lower():变小写
+		5.substr(str,start,len):获取子串	//len:字符长度
+		6.instr(str1,str2):返回子串第一次出现的索引.没有则返回0
+		7.trim(a from str):去两头a的重复,省略a from 默认为去空格
+		8.lpad(str,len,a):用a把str左填充到10个字符
+		9.rpad();同上,右填充
+		10.replace(str,str1,str2):把str中的str1替换为str2
+
+	2.数学函数:
+		1.cell() 向上取整
+		2.floor()	向下取整
+		3.truncate()  截断
+		4.mod(a,b)  取余	--等效为int型下,a-a/b*b
+		5.round(column_name,decimals) 函数用于把数值字段舍入为指定的小数位数。
+
+	3.日期函数:
+		1.now(): 返回当前系统日期+时间
+		2.curdate(): 返回当前系统日期,不包含时间
+		3.curtime(); 返回当前时间.不包含日期
+		4.year(date):获取date中的年
+		5.month()...时间同理
+		6.str_to_date(str,"格式"):把字符串解析为date //格式:%y  c d h i s 简略
+		7.date_format(date,"格式"):把日期转换为字符  	     Y  m   H     具体	
+
+	4.其他函数: 
+		1.version():查看版本
+		2.database:查看当前数据库
+		3.user():当前用户
+
+	5.流程控制函数:
+		1.if(三元运算法);
+
+		2.case():
+		   1.用法一,等效于java里的switch case
+	  		case 表达式
+			when 常量1 then 语句;//相当于自带break
+			when 常量2 then 语句;
+			...
+			end
+		   2.用法二,类似于多重if
+			case
+			when 条件1 then 语句
+			when 条件2 then 语句
+			...
+			end
+
+----------------------------------------------------------------------------------------
+##集合的比较：
+	any:某一个
+	all：任何一个
+	  *使用ANY或ALL谓词时必须同时使用比较运算
+
+	some:存在一个
+
+	r1 in r2 ：r1是否在r2集合中存在
+	r1 not in r2：r1是否不在r2集合中存在
+
+	exist/not exists：空关系测试
+	   带有exists谓词的子查询不返回任何数据，只产生逻辑值true or false
+		若内层查询结果非空，则外层的WHERE子句返回真值
+		若内层查询结果为空，则外层的WHERE子句返回假值
+ --其目标列表达式通常都用 * ，因为带EXISTS的子查询只返回真值或假值，给出列名无实际意义--
+-------------------------------------------------------------------------------------
+   #group by 
+	1.分组,根据子句内容,把where后的结果分组,
+	2.select 和having 出了聚集函数,都不可以出现 group by 子句中没有的内容
+ 	3.分组后,如有聚集函数,则分别对各个组起作用
+
+   #having:	
+	分组后再选择
+
 -------------------------------------------------------------------------------------
     **关系代数**:	   ** r(R)和s(S) **	
 	1.选择运算:	select * where<condition>
@@ -138,18 +220,64 @@
 	6.更名:
 
       附加运算:
-	1.集合交.	Select * from r Intersect Select * from s;  //要求同目
-	2.自然连接	
+	1.集合交:Intersect
+			Select * from r Intersect Select * from s;  //要求同目
+
+	2.自然连接:natural join
+	
 	3.除:	r/s = 投影R-S (r) - 投影R-S ( (投影R-S (r) 笛卡尔积 s)-投影R-S,S(r) )
 
 		结果=    候选r    - 所有不满足的(笛卡尔积-所有满足的)
+		
 
-		案列: 
-			Select distinct A.Name from r as A 	//候选
-			  where NOT EXISTS			//剔除
-			Select * from s as B			//
-			  where NOT EXISTS										(Select * from r as C where C.Name=A.Name and B.City=C.City))
-			group by A.Name
+***关系除法案列********************************************************
+	在表drivers中插入以下数据：	在表vehicles中插入以下数据：
+	
+	+-------------+------------+		+----+
+	| driver_name | vehicle_id |		| id |
+	+-------------+------------+		+----+
+	| yan         |          1 |		|  1 |
+	| wei         |          1 |		|  2 |
+	| li          |          1 |		|  3 |
+	| wei         |          2 |		+----+
+	| wei         |          3 |			
+	| li          |          2 |			
+	+-------------+------------+
+
+	drivers/vehicles 用以下查询语句表示
+  方法1:
+	Select distinct D1.driver_name from drivers AS D1	--第一层表D1
+	   where NOT EXISTS	//分析2
+		(Select * from vehicles AS V1			--第二层表V1
+			where NOT EXISTS
+			(  	//分析1
+				Select * from drivers AS D2	--第三层表D2
+				where D2.driver_name = D1.driver_name
+				and D2.vehicle_id = V1.id    //分析0
+			)
+		);
+
+	*分析0: 这个是相关子查询：子查询的查询条件依赖于父查询
+	 首先取外层查询中表的第一个元组，根据它与内层查询相关的属性值处理内层查询，
+	 若WHERE子句返回值为真，则取此元组放入结果表然后再取外层表的下一个元组重复
+	 这一过程，直至外层表全部检查完为止.
+
+	*分析1: 在第三层表D2中找 (D1.driver_name,V1.id),找不到则记录在第二层表V1中
+	*分析2: 在第二层表V1中找 D1.driver_name,找不到则记录在第一层表D1中
+
+
+  方法2:
+	Select  D1.driver_name
+	from drivers as D1, vehicles as V1
+	where D1.vehicle_id = V1.id 	//分析1
+	group by D1.driver_name
+	having COUNT(D1.vehicle_id) = (Select COUNT(*) from vehicles);//分析2
+
+	分析1:做笛卡尔积,保留满足id值对应相等的数据(相当于把id列名改成一样,再自然连接)
+	分析2:把结果以D1.driver_name分组,having保留数据条数等于V表记录条数的组
+	
+************************************************************************************* 
+		
 
 	4.赋值:
 		
@@ -160,13 +288,7 @@
 			   select account.balance from account,account d where 			   			   account.balance < d.balance
 				
 			
-----------------------------------------------------------------------------------------
-##集合的比较：
-	some:存在一个
-	all：任何一个
-	r1 in r2 ：r1是否在r2集合中存在
-	r1 not in r2：r1是否不在r2集合中存在
-	exist/not exists：空关系测试			
+
 ---------------------------------------------------------------------------------------
 ##SQL删除：				\\同查询类似，但不需要选择属性，
 	delete		

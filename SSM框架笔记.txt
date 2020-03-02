@@ -73,44 +73,73 @@
 	type 属性：指定实体类的全限定类名
 	id 属性：给定一个唯一标识，是给查询 select 标签引用用的。
 	
-      <resultMap type="com.itheima.domain.User" id="userMap">
-	<id 	column="id"		property="userId"/>
-	<result column="username" 	property="userName"/>
-	<result column="sex" 		property="userSex"/>
-	<result column="address" 	property="userAddress"/>
-	<result column="birthday" 	property="userBirthday"/>
+      <resultMap type="实体类全类名" id="引用名称">
+
+	<id  	property="userId"  	column="id"/>  //映射属性
+	<result property="userName"	column="username"/>
+	<result property="userSex"	column="sex"/>
+
+	<association property="user" javaType="user"> //映射对象
+           <id property="id" column="id"></id>
+	   <result column="username" property="username"></result>
+           ...
+	</association>
+
+	<collection property="accounts" ofType="account">//映射集合
+            <id column="aid" property="id"></id>
+            <result column="uid" property="uid"></result>
+            ...
+        </collection>
+        
       </resultMap>
 
 	id 标签:指定主键字段
 	result 标签：用于指定非主键字段
-	column 属性：用于指定数据库列名
-	property 属性：用于指定实体类属性名称
+
+	*property 属性：用于指定实体类属性名称
+	*column 属性：用于指定数据库列名
+	
 ----------------------------------------------------------------------
+
    SqlMapConfig.xml配置文件:
 
 	-properties（属性）
 	   --property
-	两种方法:
-	   1.在文件里直接写<property name="" value="">
-	   2.在classpath 下定义 db.properties 文件
-	     然后在xml里配置<properties resource/url = "">
 
-		*resource配置,要求配置文件必须在类路径下
-		*url:协议+主机+端口+uri
+	   *两种方法:
+	   	1.在文件里直接写<property name="" value="">
+
+	   	2.在classpath 下定义 db.properties 文件
+	    	  然后在xml里配置<properties resource/url = "">
+
+			*resource配置,要求配置文件必须在类路径下
+			*url:协议+主机+端口+uri
 
 
 	-settings（全局配置参数）
 	   --setting
-	-typeAliases（类型别名）
+
+
+	-typeAliases（配置类型别名）
 	   --typeAliase
 	   --package
+	例如:
+	<typeAliases>
+       	 <package name="com.itheima.domain"></package>
+    	</typeAliases>
+
+
 	-typeHandlers（类型处理器）
 	-objectFactory（对象工厂）
 	-plugins（插件）
-	-environments（环境集合属性对象）
-	  --environment（环境子属性对象）
-	     ---transactionManager（事务管理）
-	     ---dataSource（数据源）
+
+
+
+	-environments（环境集合属性对象）	mysql
+	  --environment（环境子属性对象）	mysql
+	     ---transactionManager（事务管理）	JDBC
+	     ---dataSource（数据源）		
+	
 	-mappers（映射器）
 	  --mapper
 	  --package
@@ -171,5 +200,10 @@
 	   </select>
 
 ------------------------------------------------------------------
+  JNDI
+	mocat模仿windows系统的注册表,键值对形式.
+
+------------------------------------------------------------------
+
 
 
