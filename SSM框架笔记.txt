@@ -1,3 +1,4 @@
+ --illegal-access=deny
   #mybatis:
      快速入门(maven工程里)
 	1.在pom.xml文件中添加mybatis坐标
@@ -68,6 +69,8 @@
 		OGNL表达式写法：user.username
 	*若在parameterType中已经提供了属性所属的类，所以此时不需要写对象名
 
+------------------------------------------------------------------------------
+
    resultType 配置结果类型
 	* <resultMap> 标签可以建立查询的列名和实体类的属性名称
 	不一致时建立对应关系。从而实现封装。
@@ -137,8 +140,8 @@
 
 
 
-	-environments（环境集合属性对象）	mysql
-	  --environment（环境子属性对象）	mysql
+	-environments（环境集合属性对象）	
+	  --environment（环境子属性对象）	
 	     ---transactionManager（事务管理）	JDBC
 	     ---dataSource（数据源）		
 	
@@ -200,7 +203,7 @@
 
 	<!-- 配置查询所有操作 -->
 	   <select id="findAll" resultType="user">
-		<include refid="defaultSql"></include>
+		<include refid="defaultSql"></include>----------------
 	   </select>
 
 ------------------------------------------------------------------
@@ -255,6 +258,30 @@ ResultMap 的属性列表
 
 columnPrefix
 当连接多个表时，你可能会不得不使用列别名来避免在 ResultSet 中产生重复的列名。指定 columnPrefix 列名前缀允许你将带有这些前缀的列映射到一个外部的结果映射中。 详细说明请参考后面的例子。
+
+----------------------------------------------------------------
+
+https://mybatis.org/mybatis-3/zh/sqlmap-xml.html
+
+----------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
