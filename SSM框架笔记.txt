@@ -2,7 +2,7 @@
   #mybatis:
      快速入门(maven工程里)
 	1.在pom.xml文件中添加mybatis坐标
-	2.编写传递数据的实体类(domin)
+	2.编写传递数据的实体类(domin)记得implements Serializable
 	3.编写dao接口,写方法
 	4.编写dao接口的映射文件.xml
 	<mapper namespace="接口的全类名">	//命名空间,忘了什么意思
@@ -17,7 +17,7 @@
 	</mapper>
 	5.编写SQLMapConfig.xml配置文件
 --------------------------------------------------------------------
-     使用:
+    快速入门:
 	//1.读取配置文件
 	InputStream is = Resources.getResourceAsStream("SqlMapConfig.xml");
 
@@ -71,50 +71,12 @@
 
 ------------------------------------------------------------------------------
 
-   resultType 配置结果类型
-	* <resultMap> 标签可以建立查询的列名和实体类的属性名称
-	不一致时建立对应关系。从而实现封装。
-	
-	type 属性：指定实体类的全限定类名
-	id 属性：给定一个唯一标识，是给查询 select 标签引用用的。
-	
-      <resultMap type="实体类全类名" id="引用名称">
-
-	<id  	property="userId"  	column="id"/>  //映射属性
-	<result property="userName"	column="username"/>
-	<result property="userSex"	column="sex"/>
-
-	<association property="user" javaType="user"> //映射对象
-           <id property="id" column="id"></id>
-	   <result column="username" property="username"></result>
-           ...
-	</association>
-
-	<collection property="accounts" ofType="account">//映射集合
-            <id column="aid" property="id"></id>
-            <result column="uid" property="uid"></result>
-            ...
-        </collection>
-        
-      </resultMap>
-
-	id 标签:指定主键字段
-	result 标签：用于指定非主键字段
-
-	*property 属性：用于指定实体类属性名称
-	*column 属性：用于指定数据库列名
-	
-----------------------------------------------------------------------
-
    SqlMapConfig.xml配置文件:
 
 	-properties（属性）
 	   --property
 
-	   *两种方法:
-	   	1.在文件里直接写<property name="" value="">
-
-	   	2.在classpath 下定义 db.properties 文件
+	  在classpath 下定义 db.properties 文件
 	    	  然后在xml里配置<properties resource/url = "">
 
 			*resource配置,要求配置文件必须在类路径下
@@ -177,23 +139,74 @@
 ------------------------------------------------------------------
 
   事务控制
-	在 CUD 操作中，必须通过 sqlSession.commit()方法来执行提交操作。
+	在 CRUD 操作中，必须通过 sqlSession.commit()方法来执行提交操作。
 	
 	若要自动提交,在创建 SqlSession 对象时传入参数true
 		session = factory.openSession(true);
 
 ------------------------------------------------------------------
+  JNDI
+	mocat模仿windows系统的注册表,键值对形式.
 
-  动态SQL
-	<if test="boolean类型值"></if>标签
-
-	<where></where>标签:标签体内有内容则自动加where
-
-	<foreach collection="ids" open="id in ( " close=")" item="uid" 
-	separator=",">
-		#{uid}
-	</foreach>
 ------------------------------------------------------------------
+  缓存:
+	<cache/>缓存只作用于 cache 标签所在的映射文件中的语句。启动全局的二级缓存
+	任意语句中flushCache将其设置为 true 后，只要语句被调用，都会导致本地缓存和二级缓存被清空，默认值：true（对于 insert、update 和 delete 语句）。
+
+---------------------------------------------------
+----------------
+
+
+备忘
+
+
+-------------------------------------------------重要到爆炸
+
+https://mybatis.org/mybatis-3/zh/sqlmap-xml.html
+
+----------------------------------------------------------------
+
+   resultType 配置结果类型
+	* <resultMap> 标签可以建立查询的列名和实体类的属性名称
+	不一致时建立对应关系。从而实现封装。
+	
+	type 属性：指定实体类的全限定类名
+	id 属性：给定一个唯一标识，是给查询 select 标签引用用的。
+  *实例
+    <resultMap type="实体类全类名" id="引用名称">
+   
+	<id  	property="userId"  	column="id"/>  //映射属性
+	<result property="userName"	column="username"/>
+	<result property="userSex"	column="sex"/>
+
+	<association property="user" javaType="user"> //映射关系
+		<id property="id" column="id"></id>
+		<result column="username" property="username"></result>
+           ...
+	</association>
+
+	<collection property="accounts" ofType="account">//映射集合
+            <id column="aid" property="id"></id>
+            <result column="uid" property="uid"></result>
+            ...
+     </collection>
+        
+   </resultMap>
+
+	对于关系和集合的select属性:
+		<collection property="account" column="id" ofType="Account" select="findByUid"/>
+		*把属性column的值传递给select值所对应的查询语句,得到的结果为以oftype值为元素的集合,集合的引用为property的值
+	使用分级查询的时候,
+
+	----------------------------------------------	
+
+	对于不支持自动生成类型的数据库或可能不支持自动生成主键的 JDBC 驱动，MyBatis 有另外一种方法来生成主键	 selectKey 语句结果应该被设置的目标属性,也可以是逗号分隔的属性名称列表
+	<selectKey keyProperty="id" resultType="int" order="BEFORE">
+   	 select id+1 from account order by id DESC LIMIT 1;
+	</selectKey>
+	*order属性:如果设置为 BEFORE，那么它会首先生成主键，设置 keyProperty 然后执行插入语句。如果设置为 AFTER，那么先执行插入语句，然后是 selectKey 中的语句
+
+	----------------------------------------------
 
   简化编写的SQL片段
 	<!-- 抽取重复的语句代码片段 -->
@@ -203,73 +216,95 @@
 
 	<!-- 配置查询所有操作 -->
 	   <select id="findAll" resultType="user">
-		<include refid="defaultSql"></include>----------------
+		<include refid="defaultSql"></include>-----引用语句
 	   </select>
 
+	----------------------------------------------
+  动态SQL
+	*if:
+	<if test="boolean类型值"></if>	test为true则显示标签内容
+
+	*choose, when, otherwise:自带break效果
+	<choose>
+    		<when test="title != null">
+      		AND title like #{title}
+    		</when>
+    		<when test="author != null and author.name != null">
+     			AND author_name like #{author.name}
+    		</when>
+    		<otherwise>
+      		AND featured = 1
+    		</otherwise>
+  	</choose>
+	----------------------------------------------
+	*trim, where, set
+	*<where></where>:标签体内至少有一个子元素自动加where
+		--可能会碰到where and ...的情况--不好用
+	推荐用trim
+	<trim prefix="WHERE" prefixOverrides="AND |OR ">
+  	...
+	</trim>
+
+	*<set></set>:标签体内至少有一个子元素自动加set
+	推荐用trim	//前置set,删去后缀,
+	<trim prefix="SET" suffixOverrides=",">
+  	...
+	</trim>
+	--------------------------------------------
+	//遍历容器ids,前置"id in (" ,遍历元素uid,分隔符"," ,后置")"
+	<foreach collection="ids" open="id in ( " close=")" item="uid" 
+	separator=",">
+		#{uid}
+	</foreach>
+	--------------------------------------------
+	bind 元素可以从 OGNL 表达式中创建一个变量并将其绑定到上下文。比如：
+	<select id="selectBlogsLike" resultType="Blog">
+ 		<bind name="pattern" value="'%' + _parameter.getTitle() + '%'" />
+ 		SELECT * FROM BLOG
+  		WHERE title LIKE #{pattern}
+	</select>
+	--------------------------------------------
+	*script:要在带注解的映射器接口类中使用动态 SQL，可以使用 script 元素
+	@Update({"<script>",
+      "update Author",
+      "  <set>",
+      "    <if test='username != null'>username=#{username},</if>",
+      "    <if test='password != null'>password=#{password},</if>",
+      "    <if test='email != null'>email=#{email},</if>",
+      "    <if test='bio != null'>bio=#{bio}</if>",
+      "  </set>",
+      "where id=#{id}",
+      "</script>"})
+    void updateAuthorValues(Author author);
+	------------------------------------------------
+	多数据库支持
+	------------------------------------------------
+	动态 SQL 中的可插拔脚本语言
 ------------------------------------------------------------------
-  JNDI
-	mocat模仿windows系统的注册表,键值对形式.
+  鉴别器<discrimination>
+	查询column的值,分别比较,和结果一致的行进行匹配
+  <discriminator javaType="int" column="vehicle_type">
+    <case value="1" resultMap="carResult"/>
+    <case value="2" resultMap="truckResult"/>
+    <case value="3" resultMap="vanResult"/>
+    <case value="4" resultMap="suvResult"/>
+  </discriminator>
 
 ------------------------------------------------------------------
+  延迟加载	lazyLoadingEnabled=true	aggressiveLazyLoading=true
+	*lazyLoadingEnabled	延迟加载的全局开关。当开启时，所有关联对象都会延迟加载。 特定关联关系中可通过设置 fetchType 属性来覆盖该项的开关状态。	默认false
+	*aggressiveLazyLoading	当开启时，任何方法的调用都会加载该对象的所有属性。 否则，每个属性会按需加载（参考 lazyLoadTriggerMethods)。	true | false	false （在 3.4.1 及之前的版本默认值为 true）
 
-
-
--------------------------------------------------------------------
-备忘
-	1.flushCache将其设置为 true 后，只要语句被调用，都会导致本地缓存和二级缓存被清空，默认值：true（对于 insert、update 和 delete 语句）。
------------------------------------------------------
-	2.
-selectKey 元素的属性
-属性
-描述
-keyProperty
-selectKey 语句结果应该被设置的目标属性。如果希望得到多个生成的列，也可以是逗号分隔的属性名称列表。 
-keyColumn
-匹配属性的返回结果集中的列名称。如果希望得到多个生成的列，也可以是逗号分隔的属性名称列表。 
-resultType
-结果的类型。MyBatis 通常可以推断出来，但是为了更加精确，写上也不会有什么问题。MyBatis 允许将任何简单类型用作主键的类型，包括字符串。如果希望作用于多个生成的列，则可以使用一个包含期望属性的 Object 或一个 Map。 
-order
-这可以被设置为 BEFORE 或 AFTER。如果设置为 BEFORE，那么它会首先生成主键，设置 keyProperty 然后执行插入语句。如果设置为 AFTER，那么先执行插入语句，然后是 selectKey 中的语句 - 这和 Oracle 数据库的行为相似，在插入语句内部可能有嵌入索引调用。 
-statementType
-与前面相同，MyBatis 支持 STATEMENT，PREPARED 和 CALLABLE 语句的映射类型，分别代表 PreparedStatement 和 CallableStatement 类型。 
--------------------------------------------------重要到爆炸
-3结果映射（resultMap）
-constructor - 用于在实例化类时，注入结果到构造方法中 
-idArg - ID 参数；标记出作为 ID 的结果可以帮助提高整体性能
-arg - 将被注入到构造方法的一个普通结果
-id – 一个 ID 结果；标记出作为 ID 的结果可以帮助提高整体性能
-result – 注入到字段或 JavaBean 属性的普通结果
-association – 一个复杂类型的关联；许多结果将包装成这种类型 
-嵌套结果映射 – 关联本身可以是一个 resultMap 元素，或者从别处引用一个
-collection – 一个复杂类型的集合 
-嵌套结果映射 – 集合本身可以是一个 resultMap 元素，或者从别处引用一个
-discriminator – 使用结果值来决定使用哪个 resultMap 
-case – 基于某些值的结果映射 
-嵌套结果映射 – case 本身可以是一个 resultMap 元素，因此可以具有相同的结构和元素，或者从别处引用一个
-
-
-ResultMap 的属性列表
-	id	当前命名空间中的一个唯一标识，用于标识一个结果映射。
-	type	类的完全限定名, 或者一个类型别名（关于内置的类型别名，可以参考上面的表格）。
-
-----------------------------------------------------------------	
-关联元素
-<associate>
-
-columnPrefix
-当连接多个表时，你可能会不得不使用列别名来避免在 ResultSet 中产生重复的列名。指定 columnPrefix 列名前缀允许你将带有这些前缀的列映射到一个外部的结果映射中。 详细说明请参考后面的例子。
-
-----------------------------------------------------------------
-
-https://mybatis.org/mybatis-3/zh/sqlmap-xml.html
-
-----------------------------------------------------------------
-
-
-
-
-
-
+------------------------------------------------------------------
+  缓存:
+	一级缓存存在sqlsession对象里: 多次引用,是引用同一个对象(对象已存在)
+		*同一个sqlsession,第二次查询已查询过的内容直接引用一级缓存
+	二级缓存存在sqlfactory对象里: 多次引用,不是同一对象,但是数据相同(引用时生成对象)
+	   使用步骤:
+		1.让mybatis框架支持二级缓存(默认支持,cacheEnabled="true")
+		2.让当前的映射文件支持二级缓存(<cache/>)
+		3.让当前操作支持二级缓存(操作标签里属性usecache="true")
+		*同一个sqlfactory获取的不同的sqlsession,重复查询,在二级缓存里查
 
 
 
