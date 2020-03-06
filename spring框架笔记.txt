@@ -22,9 +22,9 @@
 	3.创建持久层接口和实现类
 	4.配置xml
 	 1.导入jar包
-	 2.创建xml文件(类的根路径下)
+	 2.创建xml文件(类(资源)的根路径下)
 	 3.在配置文件中配置service和dao(依赖注入)
-	5.获取spring容器
+	5.获取spring容器(指定xml路径)
 	6.根据bean的id获取对象	getBean("id")
 ----------------------------------------------
 spring核心容器的两个接口:
@@ -32,7 +32,9 @@ spring核心容器的两个接口:
 		构建核心容器时,创建对象的策略是立即加载
 	*BeanFactory:多例对象使用
 		构建核心容器时,创建对象的策略是延时加载
-
+----------------------------------------------
+获取容器:
+	new ClassPathXMLApplicationContext(bean.xml)
 ----------------------------------------------
 bean标签
 	作用：
@@ -42,6 +44,7 @@ bean标签
 	属性:
 	 *id:给对象在容器中提供唯一标识
 	 *class:指定类的全限定类名.用于反射创建对象.默认情况下调用无参构造函数。
+
 	 *scope属性:指定bean的作用范围
 		取值:
 		*singleton:单例(默认值)
@@ -49,7 +52,7 @@ bean标签
 		*request:web项目中,Spring 创建一个 Bean 的对象,将对象存入到 request 域中.
 		*session:同上,session域中
 		*global:作用于集群环境的会话范围
-
+	------------------------------------------
 # bean的作用范围和生命周期
 	单例对象:scope="singleton"
 		*一个应用只有一个对象的实例。它的作用范围就是整个引用。
@@ -147,6 +150,7 @@ bean标签
  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
  xsi:schemaLocation="http://www.springframework.org/schema/beans
 http://www.springframework.org/schema/beans/spring-beans.xsd">
+
 <!-- bean 标签：用于配置让 spring 创建对象，并且存入 ioc 容器之中
  id 属性：对象的唯一标识。
  class 属性：指定要创建对象的全限定类名
@@ -155,4 +159,63 @@ http://www.springframework.org/schema/beans/spring-beans.xsd">
 <bean id="accountService" class="com.itheima.service.impl.AccountServiceImpl">
 </bean>
 <!-- 配置 dao -->
-<bean id="accountDao" class="com.itheima.dao.impl.AccountDaoImpl"></bean>
+<bean id="accountDao" class="com.itheima.dao.impl.AccountDaoImpl">
+</bean>
+
+===================================================
+
+注解方式:
+//注解在类上------------------------------
+ # 用于创建对象:	相当于<bean id="" class="">
+	@Component	
+	@Conroller :用于表现层
+	@Service	:用于业务层
+	@Repository:用于持久层
+ *如果不指定 value 属性，默认 bean 的 id 是当前类的类名。首字母小写,以上4个注解本质相同,
+
+ # 用于改变作用范围:相当于：<bean  scope="">
+	@Scope
+	   value：指定范围的值。
+		singleton
+		prototype
+ 		request
+ 		session
+ 		globalsession
+
+ # 关于配置类
+	 @Configuration:
+		用于指定当前类是一个 spring 配置类，当创建容器时会从该类上加载注解。获取容器时需要使用
+AnnotationApplicationContext
+
+	@ComponentScan:
+		用于指定 spring 在初始化容器时要扫描的包。
+
+	@PropertySource
+		value[]：用于指定 properties 文件位置。如果是在类路径下，需要写上 classpath:
+
+	@Import:用于导如其他配置类
+		value[]：用于指定其他配置类的字节码。
+
+ 		-----------------------
+  * 关于Spring整合junit
+	1.导入整合 junit 的必备 jar
+	2.@RunWith 注解替换原有运行器
+	3.@ContextConfiguration指定配置文件(类)的位置
+	4.用@Autowired给变量注入数据
+//注解在属性上---------------------------------
+ # 用于注入数据:	可以使用el表达式
+	相当于：<property name="" v/r=""> 
+	@Autowired:自动注入,使用要注入的对象变量名称作为bean的 id
+	@Qualifier:在自动注入的基础上指定id
+		value:指定 bean的 id。
+	@Resource:直接按照Bean的id注入。
+		name：指定 bean 的 id。
+	@Value:注入基本数据类型和 String 类型数据的
+		value：用于指定值
+
+//注解在方法上----------------------------------
+	@Bean:
+		name：给当前@Bean注解方法创建的对象指定一个名称(即bean的id）。
+	@PostConstruct:	用于指定初始化方法。
+	@PreDestroy:	用于指定销毁方法。
+
