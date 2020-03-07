@@ -16,7 +16,7 @@
 	2.工厂也不直接new对象,利用反射,得到类的实例对象
 
 ----------------------------------------------
-使用前的准备:
+快速入门:
 	1.准备spring的开发包
 	2.创建业务层接口和实现类
 	3.创建持久层接口和实现类
@@ -27,11 +27,23 @@
 	5.获取spring容器(指定xml路径)
 	6.根据bean的id获取对象	getBean("id")
 ----------------------------------------------
-spring核心容器的两个接口:
+spring核心容器的两个接口:	
 	*ApplicationContext:单例对象使用	采用此接口
 		构建核心容器时,创建对象的策略是立即加载
+		*常用实现类:
+			1.ClassPathXmlApplicationContext:
+			  读取类路径下的的配置文件
+			2.FileSystemXmlApplicationContext
+			  加载磁盘任意路径下的配置文件(有访问权限)
+			3.AnnotationConfigApplicationContext
+			  用于读取注解创建容器的
+
 	*BeanFactory:多例对象使用
 		构建核心容器时,创建对象的策略是延时加载
+
+	//搞不懂有什么区别区别,单列本来就是立即加载,多例本来就是延时加载,和这两个接口有什么关系.明明都可以混用
+		*APPlicationContext继承了BeanFactory接口
+
 ----------------------------------------------
 获取容器:
 	new ClassPathXMLApplicationContext(bean.xml)
@@ -60,7 +72,7 @@ bean标签
 
 	多例对象：scope="prototype"
 		*每次访问对象时，都会重新创建对象实例。
-		*生命周期：随容器创建而生,直到被java垃圾回收器回收(与容器状态无关)
+		*生命周期：访问对象时由容器创建,直到被java垃圾回收器回收(与容器状态无关)
 
 ----------------------------------------------
 实例化bean的三种方式
@@ -182,7 +194,7 @@ http://www.springframework.org/schema/beans/spring-beans.xsd">
  		session
  		globalsession
 
- # 关于配置类
+ # 关于配置类------------------------------
 	 @Configuration:
 		用于指定当前类是一个 spring 配置类，当创建容器时会从该类上加载注解。获取容器时需要使用
 AnnotationApplicationContext
@@ -196,12 +208,16 @@ AnnotationApplicationContext
 	@Import:用于导如其他配置类
 		value[]：用于指定其他配置类的字节码。
 
- 		-----------------------
+	@ContextConfiguration:指定配置文件(类)的位置
+		classes = xxxConfig.class
+
+ 	-------------------------------
   * 关于Spring整合junit
 	1.导入整合 junit 的必备 jar
 	2.@RunWith 注解替换原有运行器
 	3.@ContextConfiguration指定配置文件(类)的位置
 	4.用@Autowired给变量注入数据
+
 //注解在属性上---------------------------------
  # 用于注入数据:	可以使用el表达式
 	相当于：<property name="" v/r=""> 
