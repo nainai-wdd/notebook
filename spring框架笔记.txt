@@ -235,3 +235,127 @@ AnnotationApplicationContext
 	@PostConstruct:	用于指定初始化方法。
 	@PreDestroy:	用于指定销毁方法。
 
+=======================================================
+
+动态代理:	//辅助理解,使用框架时Spring AOP会自动实现动态代理
+
+ *分类:
+	1.基于接口的动态代理
+	2.基于子类的动态代理
+
+ 1.基于接口的动态代理:
+	1.使用Proxy类中的newProxyInstance方法
+	 Proxy.newProxyInstance(参数...)
+		参数:
+		1.ClassLoader:代理对象的类加载器
+		2.Class[]:字节码数组,接口.getClass().getInstance()
+		3.InvocationHandler:处理器
+			我们实现它,写出增强的方法
+
+ 2.基于子类的动态代理
+	1.要求:被代理类不能是最终类
+	2.创建代理类方法:使用Enhancer类中的create方法
+	   create的参数:
+		1.Class:代理对象的字节码
+		2.Callback:用于增强的代码,写出该接口的实现类
+			我们一般写该接口的子接口实现类:MethodInterceptor
+
+---------------------------------------------------------
+
+AOP:
+	*Aspect Oriented Programming 即：面向切面编程。
+	作用：
+		在程序运行期间，不修改源码对已有方法进行增强。
+	优势：
+		减少重复代码
+		提高开发效率
+		维护方便
+	使用动态代理技术实现
+
+  *相关术语:
+	1.Joinpoint(连接点):代理对象的方法
+	2.Pointcut(切入点):指定Joinpoint进行拦截
+	3.Advice(通知/增强):增强方法时做的事
+	4.Introduction(引介):一种特殊的通知在不修改类代码的前提下, Introduction 可以在运行期为类动态地添加一些方法或 Field。
+	5.Target(目标对象):代理的目标对象。
+	6.Weaving(织入):是指把增强应用到目标对象来创建新的代理对象的过程。spring 采用动态代理织入，而 AspectJ采用编译期织入和类装载期织入。
+	7.Proxy(代理）:一个类被 AOP织入增强后，就产生一个结果代理类。
+	8.Aspect(切面):是切入点和通知（引介）的结合。
+
+	--------------------------------------------------
+  *基于 XML的 AOP配置
+	1.把通知类用 bean标签配置起来
+
+	2.声明 aop配置,使用 <aop:config>
+	
+	3.配置切面,使用 <aop:aspect>
+	  *属性:
+		id:给切面提供一个唯一标识
+		ref:引用配置好的通知类bean的id
+
+	4.配置切入点表达式,使用 <aop:pointcut>
+	  *作用：用于配置切入点表达式。就是指定对哪些类的哪些方法进行增强。导入aspectjweaver,用以识别切入点表达式.
+	  *属性：
+		expression：用于定义切入点表达式。
+		id：用于给切入点表达式提供一个唯一标识
+
+	5.配置通知及其类型,使用:aop:xxx 	
+	  *属性：
+		method:用于指定通知类中的增强方法名称
+		ponitcut-ref：用于指定切入点的表达式的引用
+		poinitcut：用于指定切入点表达式
+	  *xxx:
+		before: 前置
+		after-returning: 后置
+		after-throwing: 异常
+		after: 最终
+		around: 环绕(可以包揽上面xxx的功能)
+			可以引用代理对象的方法
+
+  *切入点表达式(execution)说明:
+	导入aspectjweaver,用以识别切入点表达式.
+	表达式语法：execution([修饰符] 返回值类型 包名.类名.方法名(参数))
+	1.访问修饰符可以省略
+	2.返回值可以使用*号，表示任意返回值
+	3.包名可以使用*号，表示任意包，但是有几级包，需要写几个*
+	4.使用..来表示当前包，及其子包
+	5.类名可以使用*号，表示任意类
+	6.方法名可以使用*号，表示任意方法
+	7.参数列表可以使用*，表示参数可以是任意类型，但是必须有参数
+	8.参数列表可以使用..表示有无参数均可，有参数可以是任意类型
+
+	全通配方式：
+	execution(* *..*.*(..))
+
+	常用通配:
+	execution(* com.itheima.service.impl.*.*(..))
+
+  *环绕通知around:
+	1.spring框架为我们提供了一个接口：ProceedingJoinPoint，它可以作为环绕通知的方法参数.
+	2.在环绕通知执行时，spring框架会为我们提供该接口的实现类对象，我们直接使用就行。
+	3.接口的常用方法:
+		getArgs(): 获取切入点(方法)执行所需的参数
+		proceed(): 执行切入点(方法)
+
+  *基于注解的 AOP配置
+	*.xml要导入context的名称空间,和基于xml的AOP配置的不同
+	1.把资源使用注解配置
+	2.在配置文件(类)中指定spring要扫描的包
+	<context:component-scan base-package="com.itheima">	</context:component-scan>
+	@ComponentScan(basePackages="com.itheima")
+	3.使用注解配置AOP
+		0.通知类上使用@Component配置(加载进容器)
+		1.通知类上使用@Aspect注解声明为切面
+		2.在增强的方法上使用注解配置通知
+			1.配置切入点:
+			  @Pointcut("切入点表达式")
+			  @Pointcut("execution(* *..*.*(..))")
+			2.配置通知类型:
+			  @xxx   和xml通知配置中的xxx相同(没有-)
+		3.在spring配置文件(类)中开启 spring对注解 AOP的支持				<aop:aspectj-autoproxy/>
+			@EnableAspectJAutoProxy
+		
+
+
+
+
