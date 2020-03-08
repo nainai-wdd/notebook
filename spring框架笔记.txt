@@ -10,7 +10,9 @@
 	6.降低javaEE api的使用难度
 	7.java源码是经典学习范例
 
-----------------------------------------------IOC:Inversion Of Control	控制反转
+----------------------------------------------
+IOC:
+	*Inversion Of Control	控制反转
 	*把创建对象的权利交给框架,削减耦合
 	1.不直接new对象,通过new工厂,让工厂给出对象
 	2.工厂也不直接new对象,利用反射,得到类的实例对象
@@ -42,7 +44,7 @@ spring核心容器的两个接口:
 		构建核心容器时,创建对象的策略是延时加载
 
 	//搞不懂有什么区别区别,单列本来就是立即加载,多例本来就是延时加载,和这两个接口有什么关系.明明都可以混用
-		*APPlicationContext继承了BeanFactory接口
+		*ApplicationContext继承了BeanFactory接口
 
 ----------------------------------------------
 获取容器:
@@ -106,7 +108,7 @@ bean标签
 			return new AccountServiceImpl();
 		}
 	}
-		1.在<bean>标签中实例工厂,再使用工厂的bean来调用里面的方法
+		1.先在<bean>标签中实例工厂,再使用工厂的bean来调用里面的方法
 	<bean id="instancFactory" class="com.itheima.factory.InstanceFactory"></bean>
 	<bean id="accountService"
  factory-bean="instancFactory"
@@ -145,7 +147,7 @@ bean标签
  # p名称空间注入数据(本质set)
 	此种方式是通过在 xml中导入 p 名称空间，使用 p:propertyName 来注入数据，
 	
-
+    不懂-
 	--------------------------------------
  # 注入集合属性(set)
 	<!-- 注入集合数据
@@ -284,9 +286,9 @@ AOP:
 
 	--------------------------------------------------
   *基于 XML的 AOP配置
-	1.把通知类用 bean标签配置起来
+	1.把通知类用bean标签配置起来
 
-	2.声明 aop配置,使用 <aop:config>
+	2.声明aop配置,使用 <aop:config>
 	
 	3.配置切面,使用 <aop:aspect>
 	  *属性:
@@ -294,7 +296,7 @@ AOP:
 		ref:引用配置好的通知类bean的id
 
 	4.配置切入点表达式,使用 <aop:pointcut>
-	  *作用：用于配置切入点表达式。就是指定对哪些类的哪些方法进行增强。导入aspectjweaver,用以识别切入点表达式.
+	  *作用：用于配置切入点表达式。就是指定对哪些类的哪些方法进行增强。导入aspectjweaver的jar,用以识别切入点表达式.
 	  *属性：
 		expression：用于定义切入点表达式。
 		id：用于给切入点表达式提供一个唯一标识
@@ -352,7 +354,8 @@ AOP:
 			  @Pointcut("execution(* *..*.*(..))")
 			2.配置通知类型:
 			  @xxx   和xml通知配置中的xxx相同(没有-)
-		3.在spring配置文件(类)中开启 spring对注解 AOP的支持				<aop:aspectj-autoproxy/>
+		3.在spring配置文件(类)中开启 spring对注解 AOP的支持
+			<aop:aspectj-autoproxy/>
 			@EnableAspectJAutoProxy
 		
 
