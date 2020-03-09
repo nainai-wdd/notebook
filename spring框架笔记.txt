@@ -10,7 +10,10 @@
 	6.降低javaEE api的使用难度
 	7.java源码是经典学习范例
 
-----------------------------------------------
+=================================================
+IOC
+=================================================
+
 IOC:
 	*Inversion Of Control	控制反转
 	*把创建对象的权利交给框架,削减耦合
@@ -180,7 +183,7 @@ http://www.springframework.org/schema/beans/spring-beans.xsd">
 
 注解方式:
 //注解在类上------------------------------
- # 用于创建对象:	相当于<bean id="" class="">
+ # 创建对象注入容器:	相当于<bean id="" class="">
 	@Component	
 	@Conroller :用于表现层
 	@Service	:用于业务层
@@ -220,7 +223,7 @@ AnnotationApplicationContext
 	3.@ContextConfiguration指定配置文件(类)的位置
 	4.用@Autowired给变量注入数据
 
-//注解在属性上---------------------------------
+//注解在属性上(这个类已配置)--------------------
  # 用于注入数据:	可以使用el表达式
 	相当于：<property name="" v/r=""> 
 	@Autowired:自动注入,使用要注入的对象变量名称作为bean的 id
@@ -231,13 +234,17 @@ AnnotationApplicationContext
 	@Value:注入基本数据类型和 String 类型数据的
 		value：用于指定值
 
-//注解在方法上----------------------------------
-	@Bean:
-		name：给当前@Bean注解方法创建的对象指定一个名称(即bean的id）。
+//注解在方法上(这个类已配置)-----------------------
+	@Bean:把当前方法返回值注入容器
+		name：bean的id
+	*注意:@Configuration下,@bean标记的方法只会执行一次,后面再调用时不经过方法,直接返回容器中的对象
+
 	@PostConstruct:	用于指定初始化方法。
 	@PreDestroy:	用于指定销毁方法。
 
-=======================================================
+=================================================
+AOP
+=================================================
 
 动态代理:	//辅助理解,使用框架时Spring AOP会自动实现动态代理
 
@@ -284,7 +291,7 @@ AOP:
 	7.Proxy(代理）:一个类被 AOP织入增强后，就产生一个结果代理类。
 	8.Aspect(切面):是切入点和通知（引介）的结合。
 
-	--------------------------------------------------
+	--------------------------------------------
   *基于 XML的 AOP配置
 	1.把通知类用bean标签配置起来
 
@@ -358,7 +365,73 @@ AOP:
 			<aop:aspectj-autoproxy/>
 			@EnableAspectJAutoProxy
 		
+===============================================
+Spring中的jdbc
 
+  #操作模板类:(关系型数据库常用)
+	1.JDBCTemplate
+		属性:DataSource dataSource;
+		 *内置数据源:
+			DriverManagerDataSource
 
+		作用:从源获取连接,执行sql语句
+		*常用BeanPropertyRowMapper()来封装查询结果
+	2.HibernateTemplate
+	--------------------------------------
+  #Spring中的事务控制:
+	PlatformTransactionManager接口
+	已有实现类:(使用 Spring JDBC时使用)
+		DataSourceTransactionManager 
 
+	事务的定义信息对象:
+		TransactionDefinition
+	
+	事务的传播行为
+	REQUIRED:新建一个事务，或者加入已有事务中。（默认值）
+	SUPPORTS:支持当前事务，如果当前没有事务，就以非事务方式执行（没有事务）
 
+	--------------------------------------
+  #基于 XML的声明式事务控制
+	1.配置事务管理器(spring给的通知类):
+	DataSourceTransactionManager(类)
+
+<bean id="transactionManager"
+class="org.springframework.jdbc.datasource.DataSourceTransactionManager"><property name="dataSource" ref="dataSource"/>
+</bean>
+
+	2.配置事务管理器中的通知,(通知单独的配置,使其在AOP配置时可以直接引用)
+
+<tx:advice id="txAdvice" transaction-manager="transactionManager">
+
+<tx:attributes>
+(此处配置事务属性)
+<tx:method name="*" read-only="false" propagation="REQUIRED"/>
+<tx:method name="find*" read-only="true" propagation="SUPPORTS"/>
+</tx:attributes>
+
+</tx:advice>
+
+	4.AOP配置,配置切入点,引用单独配置好的整个通知
+<aop:config>
+<aop:pointcut expression="execution(* com.itheima.service.impl.*.*(..))"
+id="pt1"/>
+
+<aop:advisor advice-ref="txAdvice" pointcut-ref="pt1"/>
+</aop:config>
+
+	-------------------------------------
+  #基于注解的事务控制
+	1.标记要控制的类(业务层)
+		@Transactional:
+		等效为xml里面配事务管理器,配通知,配AOP
+	2.用配置类开启spring对注解的支持
+		@Configuration
+		@ComponentScan("要扫描的包")
+		@EnableTransactionManagement
+	3.注解配置数据源,jdbcTemplate
+	4.注解配置事务管理器
+		DataSourceTransactionManager
+
+		*3.4:	 new出来,用@bean注入容器
+
+==============================================
