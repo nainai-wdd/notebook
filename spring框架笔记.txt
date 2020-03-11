@@ -81,11 +81,11 @@ bean标签
 
 ----------------------------------------------
 实例化bean的三种方式
-	-------------------------------------
+-------------------------------------
 	1.根据默认无参构造函数来创建类对象
 	<bean id="accountService" class="com.itheima.service.impl.AccountServiceImpl"/>
 
-	-------------------------------------
+-------------------------------------
 	2.spring管理静态工厂,使用静态工厂的方法创建
 		0.模拟一个静态工厂，创建业务层实现类
 	public class StaticFactory {
@@ -103,7 +103,7 @@ bean标签
 	class 属性：指定静态工厂的全限定类名
 	factory-method 属性：指定生产对象的静态方法
 
-	----------------------------------
+-----------------------------------------
 	3.spring管理实例工厂,使用实例工厂的方法创建对象
 		0.模拟一个实例工厂，创建业务层实现类
 	public class InstanceFactory {
@@ -188,6 +188,7 @@ http://www.springframework.org/schema/beans/spring-beans.xsd">
 	@Conroller :用于表现层
 	@Service	:用于业务层
 	@Repository:用于持久层
+
  *如果不指定 value 属性，默认 bean 的 id 是当前类的类名。首字母小写,以上4个注解本质相同,
 
  # 用于改变作用范围:相当于：<bean  scope="">
@@ -435,3 +436,31 @@ id="pt1"/>
 		*3.4:	 new出来,用@bean注入容器
 
 ==============================================
+SSM整合:
+===============================================	
+ ## spring-springMVC:
+		*若要开启注解配置,则二者要配置不扫描对方的注解
+		spring不扫描@Controller
+		springMVC只扫描@Controller
+	1.在web-xml配置ServletContext域的监听器,容器创建时会自动加载WEB-INF目录下applicationContext.xml.
+		*但是一般spring的配置文件不再WEB-INF下,所以可以用<context-param>标签声明applicationContext.xml(spring配置文件)为全局参数
+	2.在web-xml配置DispatchServlet(前端控制器),同时设置初始化参数为springMVC.xml配置文件
+
+	
+=====================================================
+<!--加载web容器的监听器,默认初始化方法:加载applicationContext.xml文件-->
+  <listener>
+    <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+  </listener>
+<!--  设置文件的路径-->
+  <context-param>
+    <param-name>contextConfigLocation</param-name>
+    <param-value>classpath:applicationContext.xml</param-value>
+  </context-param>
+===================================================
+ ## spring-mybatis:
+	*把mybatis所需要的配置都在applicationContext.xml中代替实现.
+	1.配置连接池
+	2.配置工厂类:SqlSessionFactoryBean
+	3.配置mapper映射dao所在的包
+		MapperScannerConfigurer

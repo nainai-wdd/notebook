@@ -73,6 +73,11 @@
 
    SqlMapConfig.xml配置文件:
 
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
 	-properties（属性）
 	   --property
 
@@ -110,7 +115,7 @@
 	-mappers（映射器）
 	  --mapper
 	  --package
-
+</configuration>
 ------------------------------------------------------------------
    mappers（映射器）
 	<mapper resource=" " />

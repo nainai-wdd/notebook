@@ -932,7 +932,8 @@ HTTP:超文本传输协议(Hyper Text Transfer Protocol)
 	1.作用:替换和简化jsp页面中的java代码的编写
 	2.语法:${表达式}
 	3.注意:
-		可以设置忽略EL表达式
+		需要在jsp指令中设置忽略EL表达式
+		isELIgnored="false"
 	4.使用 :
 	   1.运算
 		*特有的空运算符:empty
