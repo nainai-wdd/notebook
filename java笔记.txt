@@ -142,6 +142,48 @@ Matcher对象
      System.out.println(m.group()); 
   } 
 
+--------------------------------------------------
+代理:
+   1.静态代理:
+	创建一个直接引用原对象的代理对象
+   2.动态代理:
+	在运行时创建代理对象
+
+	1.JDK动态代理:
+	  特点:
+		1.动态创建 包含原对象引用的代理对象
+		2.原对象必须实现接口
+		3.JDK直接支持
+	  步骤:
+		1.获取信息
+			1.类加载器
+			2.代理对象所实现的接口
+		2.编写处理器 InvocationHandler
+			*需要原对象的实例
+		3.利用Proxy.newProxyInstance创建代理对象实例
+	  例子:
+Sale proxy = (Sale)Proxy.newProxyInstance(Computer.class.getClassLoader(), 				Computer.class.getInterfaces(), new InvocationHandler() {
+           Object computer = new Computer();
+           @Override
+           public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+			return method.invoke(computer, args);
+		}});
+
+	2.CGLIB动态代理:
+	   特点:
+		0.(需要导入jar包)
+		1.动态创建 继承了原对象的代理对象
+		2.无需实现接口
+		3.高性能
+	   步骤:
+		1.创建用于拦截回调的类(继承MethodInterceptor)
+		2.创建Enhancer设置拦截对象,设置回调的类(传入1.对象),设置回调策略(编写类,继承CallbackFilter,传入对象)
+		3.利用Enhancer.create()创建代理对象
+		
+	  **可以使用工厂模式来代理接口
+
+--------------------------------------------------
+空对象模式,可以利用代理实现
 ==================================================================================
 *本地字符流默认JBK编码
 
