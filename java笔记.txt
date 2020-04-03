@@ -75,9 +75,49 @@ final关键字
 	3.PriorityQueue	Queue
 	3.HashSet		Set
 	4.HashMap		Map
-	5.TreMap		Map
+	5.LinkedHashMap Map
+	6.TreMap		Map
 	
-
+ #详解:
+  ArrayList:自动扩容的数组
+  	注意事项:
+  		按索引遍历删除指定元素时,数组会发生变化。会导致漏删。
+  		可以采用，倒序遍历。或者迭代器中使用remove方法
+  	 
+  LinkedList：双向链表
+  	注意事项:
+  		1.可以当做Queue和Stack使用(ps: Stack不是接口)
+  		2.尽量不要通过索引遍历
+  		
+  PriorityQueue:优先队列
+  	注意事项:
+  		1.维护了一个数组实现的最小堆
+  		
+  HashSet,LinkedHashSet,TreSet:Set
+  	注意事项:
+  		与同名的Map类似
+    	
+  HashMap:
+  	注意事项:
+  		0.维护了一个拉链法处理冲突的散列表.(无序)
+  		1.默认LOADING_FACTORY = 0.75f
+  		2.数组大小 m 为 2^x。（原因：利用hash值计算索引时可以利用位运算，效率高）
+  		3.计算hash值时,把key的hash值的前16位和后16位做位与,(原因:数组大小为 2 的整数次幂,利用哈希计算索引时,只		有低位有影响)
+  		4.拉链法中的单链表在节点大于8时转换为红黑树,节点小于6时变回单链表
+  		5.resize()方法巧妙利用 hash & m == 0 来判断扩容后节点所对应的节点是否改变
+  		6.真的用了好多位运算。佩服
+  
+  LinkedHashMap:有序的HashMap
+  	注意事项:
+  		1.继承HashMap
+  		2.利用给Node节点加上了before, after。从而实现有序遍历
+  
+  TreMap：红黑树Map
+  	注意事项：
+  		1.红黑树,元素必须可比较
+  		2.时间复杂度,查找 < 插入 < 删除 约等于 lg(n)
+  		3.利用节点旋转变化,和颜色翻转变化,不会影响等效树高.来维护树的等效平衡
+  		4.最差情况,树高等于2lg(n)
 --------------------------------------------------
 字符串:
 
