@@ -129,9 +129,9 @@ final关键字
 正则表达式（pattern类）
  *字符类
 	.：	任意字符
-	//d：	整数字符
-	//w: 	单词字符
-	//s:	空白符（空格，tab，换行，换页和回车）
+	\\d：	整数字符
+	\\w: 	单词字符
+	\\s:	空白符（空格，tab，换行，换页和回车）
 		**大写视其为非**
 
 	.：	任意字符
@@ -181,7 +181,46 @@ Matcher对象
   while(m.find()) { 
      System.out.println(m.group()); 
   } 
-
+--------------------------------------------------
+IO流:
+   *为流增加功能时,大量利用装饰模式
+   *字节流转换为字符流,利用适配器模式
+   
+   *适配器:继承字节流,实现字符流.
+   	InputStreamReader / OutputStreamWriter
+   
+   *核心接口:
+   	字节流 InputStream / Out
+   	字符流 Reader / Writer
+   		  
+   *核心实例
+     	1.FileInputStream		/ Out
+     	  FIleReader			/ Writer
+   	2.ByteArrayInputStream	/ Out
+   	  CharArrayReader		/ Writer
+   	3.PipeInputStream		/ Out
+   	  PipeReader			/ Writer
+   	  
+   	4.StringBufferInputStream(已弃用) 
+   	  StringReader			/ Writer
+   	5.SequenceInputStream
+   		
+   *装饰接口FilterInputStream	/ Out
+   		FilterWriter		/ Writer
+   		
+   *装饰实例
+   	1.DataInputStream		/ Out	 / PrintStream
+   	  需要读行时使用BufferedReader	 / PrintWriter
+   	2.BufferedInputStream		/ Out	 	
+   	  BufferedReader	(readLine)	/ Writer		
+   	3.LineNumberInputStream(已弃用)
+   	  LineNumberReader
+   	4.PushbackInputStream		我们可能永远不会用到
+   	  PushbackReader
+   	  
+ 非IO流的类
+   RandomAccessFile
+   	
 --------------------------------------------------
 代理:
    1.静态代理:
@@ -224,6 +263,7 @@ Sale proxy = (Sale)Proxy.newProxyInstance(Computer.class.getClassLoader(), 				C
 
 --------------------------------------------------
 空对象模式,可以利用代理实现
+
 ==================================================================================
 *本地字符流默认JBK编码
 
