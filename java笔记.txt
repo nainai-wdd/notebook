@@ -219,8 +219,59 @@ IO流:
    	  PushbackReader
    	  
  非IO流的类
-   RandomAccessFile
+   RandomAccessFile 可读可写,还可随机读取
+   
+
+ FileChannel:
+   *获取通道:
+   	字节流对象.getChannel()
    	
+   *通道方法:
+   	1.write(ByteBuffer src): 把给定的缓冲区的内容写入通道
+   	2.read(ByteBuffer dst) : 将字节序列从此通道读入给定的缓冲区。
+   	
+   *ByteBuffer:  唯一和通道交互的缓冲器
+   	静态方法:
+   		1.wrap():接受字节数组,返回ByteBuffer
+   		2.allocation(int capacity):新生成一个ByteBuffer,其界限将为其容量
+   		
+   	从Buffer类继承的方法: 
+   		1.filp():反转此缓冲区。
+   			首先将限制设置为当前位置，然后将位置设置为 0。如果已定义了标记，则丢弃该标记。
+   		2.clear():清除此缓冲区。
+   			将位置设置为 0，将限制设置为容量，并丢弃标记。
+   		3.rewind():重绕此缓冲区。(在已经设置好限制时使用)
+   			将位置设置为 0 并丢弃标记
+   		4.position(int newPosition) 设置此缓冲区的位置。
+   			如果标记已定义且大于新的位置，则丢弃该标记。
+   	
+   	视图:
+		1.asCharBuffer() :
+          		创建此字节缓冲区的视图，作为 char 缓冲区。
+          	   ps:
+          		1.新缓冲区的内容将从此缓冲区的当前位置开始,到限制为止
+          		2.两个缓冲区内容互相可见
+          		3.但是这两个缓冲区的位置、界限和标记值是相互独立的
+          		
+          	##可以利用视图来传入基本数据类型
+          		asDouble,asInt...
+          		
+          		
+          	  **Charset.forName("编码格式").decode(buff对象)**
+          	  	创建不关联的视图,且创建时移动了原buffer的当前位置
+          	  	
+  Zip压缩类
+  	ZipInputStream
+    方法:
+  	1.putNextEntry(new ZipEntry("文件名"))
+  		开始写入新的 ZIP 文件条目并将流定位到条目数据的开始处。
+  校验类
+  	CheckedInputStream(字节流,校验方法)
+  校验方法 Checksum
+  	1.new Adler32() 快
+  	2.new CRC32()	慢
+  	
+  	
 --------------------------------------------------
 代理:
    1.静态代理:

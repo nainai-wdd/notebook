@@ -298,7 +298,7 @@ BOM：Browser    object   Model浏览器对象模型
 	         *length	当前窗口列表 中的url数量
 
 --------------------------------------------------------------------------------------------------
-DOM:Documented Object 文档对象模型
+DOM:Documented Object Model文档对象模型
       *Document:文档对象
 	1.创建：html dom模型中可以使用window对象来获取
 		1.window.document
@@ -1353,6 +1353,7 @@ HTTP:超文本传输协议(Hyper Text Transfer Protocol)
 		
 		*json解析器:
 			*常见的解析器:jsonlib,Gson,fastjson, jackson
+			
 		1.json转为java对象
 			1.导入jar包
 			2.创建核新对象
