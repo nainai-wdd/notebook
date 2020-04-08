@@ -929,7 +929,7 @@ HTTP:超文本传输协议(Hyper Text Transfer Protocol)
 --------------------------------------------------------------------------------
 
     ##EL表达式	//Expression Language
-	1.作用:替换和简化jsp页面中的java代码的编写
+	1.作用:替换和简化 jsp 页面中的java代码的编写
 	2.语法:${表达式}
 	3.注意:
 		需要在jsp指令中设置忽略EL表达式
@@ -966,7 +966,7 @@ HTTP:超文本传输协议(Hyper Text Transfer Protocol)
   $$ JSTL
 	1.概念:  JavaServer Pages Tag  Library   JSP标准标签库
 	
-	2.作用: 用于简化和替换jsp页面上 的java代码
+	2.作用: 用于简化和替换 jsp 页面上 的java代码
 
 	3.使用步骤:
 		1.导入jstl相关jar包

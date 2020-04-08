@@ -221,7 +221,7 @@ IO流:
  非IO流的类
    RandomAccessFile 可读可写,还可随机读取
    
-
+	--------------------------------------------------
  FileChannel:
    *获取通道:
    	字节流对象.getChannel()
@@ -259,7 +259,7 @@ IO流:
           		
           	  **Charset.forName("编码格式").decode(buff对象)**
           	  	创建不关联的视图,且创建时移动了原buffer的当前位置
-          	  	
+      --------------------------------------------------    	  	
   Zip压缩类
   	ZipInputStream
     方法:
@@ -270,9 +270,167 @@ IO流:
   校验方法 Checksum
   	1.new Adler32() 快
   	2.new CRC32()	慢
+
+  	--------------------------------------------------
+  *Serialable
+    序列化操作:
+  	1.在类上加implements Serialable
+  	2.ObjectInputStream 绑定FileInputStream
+  	3.ois.writeObject(实例对象)
+  	4.关闭流
+  	
+    反序列化:
+    	1.ObjectOutputStream 绑定FileOutputStream
+    	2.oos.readObject() 返回Object对象,记得向上转型
+    	
+    可以在类上添加手动序列化方法,(代替自动序列化,且不会调用构造函数)
+    	1.private void writeObject(ObjectOutputStream stream) throws IOException{}
+    	2.private void readObject(ObjectInputStream stream) throws IOException, ClassNotFoundException{}
+    	
+    transient关键字
+     在属性前加transient,此属性就不会被自动序列化
+     
+    static修饰的属性不会被序列化
+    	
+  *Externalizable:
+    	1.手动序列化, 实现read/write方法, 
+    	2.会调用构造函数 	
+    	--------------------------------------------------
+  关于clone:
+  	1.Object中的clone是浅clone,只会复制属性的索引
+  	2.用序列化和反序列化得到的副本是深clone,复制整个对象网
+  	--------------------------------------------------
+  XML:
+  	dom4j完全支持DOM，SAX和JAXP
+  	--------------------------------------------------
+  Preferences:
+  	Preferences prefs = Preference.userNodeForPackage(class c)
+  	创建以c的类名命名的单一节点.
+=============================================================
+
+并发:
+  0.Runable接口:描述任务
+  	无返回值的run()方法
+  0.Callable接口:描述任务
+  	带返回值的call()方法
+      1.执行器中用submit方法调用,返回值用Future接收
+      2.Future 对象上使用get()方法获取返回值
+  	
+  1.Thread类:任务对象
+  	1.构造器传入Runnable对象,创建任务对象
+    	2.重写run()方法,创建任务对象
+    	3.使用.start()开启进程
+    	
+  2.Executor:执行器,用来管理Thead对象
+    *ExecutorService
+    进程池:可由Executors类的静态方法创建
+    	1.CachedThread
+    	2.FixedThread
+    	3.SingleThread
+    方法:
+    	1.exectute(Runnable command),启动任务
+    	2.submit(Runnable/Callable task) 
+		提交一个任务用于执行，并返回一个表示该任务的 Future。
+    	3.shutdown	:启动一次顺序关闭，执行以前提交的任务，但不接受新任务。
+    	4.shutdownNow :
+    		试图停止所有正在执行的活动任务，暂停处理正在等待的任务，并返回等待执行的任务列表。
+     5.awaitTermination(long timeout,TimeUnit unit)方法：
+     		当等待超过设定时间时，会监测ExecutorService是否已经关闭，若关闭则返回true，否则返回false。
+     		一般情况下会和shutdown方法组合使用。
+     		
+   3.Future<V>接口:
+    作用:
+   	1.get()	:获取异步计算结果
+   	2.cancel() :取消对此任务的执行
+   	  若任务未开始,则任务永远不运行
+   		参数:boolean mayInterruptIfRunning
+   		true:允许结束运行中的任务
+    	
+  后台线程:
+  	所有非后台进程结束后,所有后台进程会被马上杀死。
+  	*setDaemon(true):设置为后台进程
+  	*isDaemon():判断是否为后台进程
+  	
+  Thread重要方法:
+  	1.start()
+  	2.t.join():
+  		当前线程等待 t 线程结束
+  	3.t.interrupt():
+  		1.if线程未受阻,设置线程状态为中断状态
+  		2.if线程处于主动受阻状态(sleep or wait),则 它 将收到 InterruptException
+  		3.if线程处于 可中断 I/O中受阻,则通道关闭, 它 将收到 ClosedByInterruptException
+  		4.if该线程在一个 Selector 中受阻，则该线程的中断状态将被设置，它将立即从选择操作返回，并可能带有一个非零值，就好像调用了选择器的 wakeup 方法一样。???
+  		4.if中断失败,线程的 checkAccess方法就会被调用,可能  抛出  SecurityException。
+  		
+  捕获线程中的异常:
+  	1.无法捕获从线程逃逸的异常,但可以给每个Thread对象附着一个异常处理器
+  	2.编写线程的异常处理器,实现 Thread.UncaughtExceptionHandler  接口
+  	3.给Thread对象设置异常处理器
+  		t.setUncaughtExceptionHandler
+  	4.可以给Thread类设置DefaultUncaughtExceptionHandler,统一异常处理器
+  	
+  终结任务:
   	
   	
---------------------------------------------------
+  *线程状态:
+  	1.new		: 新建
+  	2.Runnable	: 可运行
+  	3.Blocked	: 阻塞
+  	4.Dead	: 死亡
+  	
+    Blocked:
+     进入的情况
+    	1.调用sleep()
+    	2.调用wait()
+    	3.任务等待某个输入/输出完成
+    	4.任务进入在某个对象上调用其同步控制方法,但是对象锁不可用,因为一个任务已经获取这个锁了
+    	
+  中断:interrupt方法
+    情况:
+  	0.成功中断一个Runnable状态的线程
+  	1.如果当前线程没有中断它自己（这在任何情况下都是允许的），则该线程的 checkAccess 方法就会被调用，这可能抛出 SecurityException。 (调用线程没有修改线程的权限)。
+	2.如果线程在调用 Object 类的 wait()、wait(long) 或 wait(long, int) 方法，或者该类的 join()、join(long)、join(long, int)、sleep(long) 或 sleep(long, int) 方法过程中受阻，则其中断状态将被清除，它还将收到一个 InterruptedException。 
+	3.如果该线程在可中断的通道上的 I/O 操作中受阻，则该通道将被关闭，该线程的中断状态将被设置并且该线程将收到一个 ClosedByInterruptException。 
+	4.如果该线程在一个 Selector 中受阻，则该线程的中断状态将被设置，它将立即从选择操作返回，并可能带有一个非零值，就好像调用了选择器的 wakeup 方法一样。
+
+  
+  --------------------------------------------------
+  
+ *共享受限资源:
+ 	*volatile关键字:
+ 		1）保证可视性
+　　		2）禁止进行指令重排序。
+ 	*synchronized关键字:
+ 		1.对象锁,(需要将域设置为private.)
+ 		2.synchronized static可以锁静态代码块(类上的锁)
+ 	
+ 	*Lock对象:
+ 	  标准使用:
+ 	  	Lock lock = new ReentrantLock();
+ 	  	lock.lock;
+ 	  	try{...}
+ 	  	finally{lock.unlock;}
+ 	  	
+ 	  构造是可传入参数true,则为公平锁。否则默认是非公平锁。
+ 	  	
+ 	*happens-before原则（先行发生原则）：
+		1.程序次序规则：一个线程内，按照代码顺序，书写在前面的操作先行发生于书写在后面的操作
+		2.锁定规则：一个unLock操作先行发生于后面对同一个锁额lock操作
+		3.volatile变量规则：对一个变量的写操作先行发生于后面对这个变量的读操作
+		4.传递规则：如果操作A先行发生于操作B，而操作B又先行发生于操作C，则可以得出操作A先行发生于操作C
+		
+		5.线程启动规则：Thread对象的start()方法先行发生于此线程的每个一个动作
+		6.线程中断规则：对线程interrupt()方法的调用先行发生于被中断线程的代码检测到中断事件的发生
+		7.线程终结规则：线程中所有的操作都先行发生于线程的终止检测，我们可以通过Thread.join()方法结		束、Thread.isAlive()的返回值手段检测到线程已经终止执行
+		8.对象终结规则：一个对象的初始化完成先行发生于他的finalize()方法的开始
+		
+	线程本地储存:
+	   ThreadLocal类
+		1.ThreadLocal对象通常当做静态域储存
+		2.每个线程都会有不同的副本.
+		3.new ThreadLocal<E>()
+ 	
+=============================================================
 代理:
    1.静态代理:
 	创建一个直接引用原对象的代理对象
