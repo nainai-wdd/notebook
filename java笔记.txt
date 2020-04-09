@@ -339,7 +339,7 @@ IO流:
      		一般情况下会和shutdown方法组合使用。
      		
    3.Future<V>接口:
-    作用:
+    作用:	接受控制器submit的返回值,用以控制控制器中单个Thread.
    	1.get()	:获取异步计算结果
    	2.cancel() :取消对此任务的执行
    	  若任务未开始,则任务永远不运行
@@ -368,32 +368,6 @@ IO流:
   	3.给Thread对象设置异常处理器
   		t.setUncaughtExceptionHandler
   	4.可以给Thread类设置DefaultUncaughtExceptionHandler,统一异常处理器
-  	
-  终结任务:
-  	
-  	
-  *线程状态:
-  	1.new		: 新建
-  	2.Runnable	: 可运行
-  	3.Blocked	: 阻塞
-  	4.Dead	: 死亡
-  	
-    Blocked:
-     进入的情况
-    	1.调用sleep()
-    	2.调用wait()
-    	3.任务等待某个输入/输出完成
-    	4.任务进入在某个对象上调用其同步控制方法,但是对象锁不可用,因为一个任务已经获取这个锁了
-    	
-  中断:interrupt方法
-    情况:
-  	0.成功中断一个Runnable状态的线程
-  	1.如果当前线程没有中断它自己（这在任何情况下都是允许的），则该线程的 checkAccess 方法就会被调用，这可能抛出 SecurityException。 (调用线程没有修改线程的权限)。
-	2.如果线程在调用 Object 类的 wait()、wait(long) 或 wait(long, int) 方法，或者该类的 join()、join(long)、join(long, int)、sleep(long) 或 sleep(long, int) 方法过程中受阻，则其中断状态将被清除，它还将收到一个 InterruptedException。 
-	3.如果该线程在可中断的通道上的 I/O 操作中受阻，则该通道将被关闭，该线程的中断状态将被设置并且该线程将收到一个 ClosedByInterruptException。 
-	4.如果该线程在一个 Selector 中受阻，则该线程的中断状态将被设置，它将立即从选择操作返回，并可能带有一个非零值，就好像调用了选择器的 wakeup 方法一样。
-
-  
   --------------------------------------------------
   
  *共享受限资源:
@@ -401,10 +375,20 @@ IO流:
  		1）保证可视性
 　　		2）禁止进行指令重排序。
  	*synchronized关键字:
- 		1.对象锁,(需要将域设置为private.)
+ 		1.需要将域设置为私有,即private synchronized.
  		2.synchronized static可以锁静态代码块(类上的锁)
  	
  	*Lock对象:
+ 	  方法:
+ 	  	lock()	:获取锁,若无法获取,则线程阻塞,直到获取到锁
+ 	  	unLock()	:释放锁
+ 	  	
+ 	  	tryLock()	:尝试获取锁,无法获取则返回false,获取则true
+ 	  	tryLock(long time):
+ 	  		1.在指定时间内尝试获取锁,超时返回false,获取返回true
+ 	  		2.等待期间为可中断阻塞,可以获得InterruptException
+ 	  		
+ 	  	newCondition(): 获取lock想关联的Condition实例
  	  标准使用:
  	  	Lock lock = new ReentrantLock();
  	  	lock.lock;
@@ -412,6 +396,13 @@ IO流:
  	  	finally{lock.unlock;}
  	  	
  	  构造是可传入参数true,则为公平锁。否则默认是非公平锁。
+ 	  
+ 	*Condition类:
+ 	   通过lock.newCondition()获得相关联的实例
+ 	   	1.Condition 替代了 Object 监视器方法的使用（wait、notify 和 notifyAll）
+ 	   在锁中
+ 	  	Condition对象.await() == this.wait()
+ 	  			  .signal()== this.notify()
  	  	
  	*happens-before原则（先行发生原则）：
 		1.程序次序规则：一个线程内，按照代码顺序，书写在前面的操作先行发生于书写在后面的操作
@@ -429,6 +420,98 @@ IO流:
 		1.ThreadLocal对象通常当做静态域储存
 		2.每个线程都会有不同的副本.
 		3.new ThreadLocal<E>()
+		
+	--------------------------------------------------
+  终结任务:
+  	
+  *线程状态:
+  	1.new		: 新建
+  	2.Runnable	: 可运行
+  	3.Blocked	: 阻塞
+  	4.Dead	: 死亡
+  	
+    Blocked:
+     进入的情况
+    	1.调用sleep()
+    	2.调用wait()
+    	3.任务等待某个输入/输出完成
+    	4.任务进入在某个对象上调用其同步控制方法,但是对象锁不可用,因为一个任务已经获取这个锁了
+    	
+ #中断:
+  interrupt方法
+    0.给线程设置一个中断标记
+  	
+    1.有中断标记时:
+	1.如果线程在调用 Object 类的 wait()、wait(long) 或 wait(long, int) 方法，或者该类的 join()、join(long)、join(long, int)、sleep(long) 或 sleep(long, int) 方法过程中受阻，则其中断状态将被清除，它还将收到一个 InterruptedException。 
+	2.如果该线程在可中断的通道上的 I/O 操作中受阻，则该通道将被关闭，该线程的中断状态将被设置并且该线程将收到一个 ClosedByInterruptException。 
+	3.如果该线程在一个 Selector 中受阻，则该线程的中断状态将被设置，它将立即从选择操作返回，并可能带有一个非零值，就好像调用了选择器的 wakeup 方法一样。
+	
+    2.设置中断标记失败（这在任何情况下都是允许的），则该线程的 checkAccess 方法就会被调用，这可能抛出 SecurityException。 (调用线程没有修改线程的权限)。
+	
+	
+  终结任务的常用手段:
+  	1.在线程中判断中断标记,跳出循环
+  		while(!Thread.interrupted){}
+  	2.利用可中断阻塞时会自动判断中断标记来获得异常
+  		try{}catch(InterruptException e){}
+		
+	--------------------------------------------------
+	
+   线程协调:
+   	*synchronize的锁对象:(Object)
+   	1.wait()	:该线程发布对此监视器的所有权,并等待
+   	2.notify()	:唤醒在此对象监视器上等待的单个线程。(瞬时信号)
+   			*直到当前线程放弃此对象上的锁定，才能继续执行被唤醒的线程。
+   			
+	*Condition类:
+ 	   通过lock.newCondition()获得相关联的实例
+ 	   	1.Condition 替代了 Object 监视器方法的使用（wait、notify 和 notifyAll）
+ 	   在锁中
+ 	  	Condition对象.await() == this.wait()
+ 	  			  .signal()== this.notify()
+	
+	线程协调的常用几种思路:
+  		1.使用锁技术,等待触发条件发生:
+   		   while(触发条件)
+   			wait();
+   			
+   		2.把要共享的资源放入BlockingQueue中(生产者-消费者模型)
+   	   
+   		3.使用PipedReader/Write  在线程间传递信息
+   	   
+   	*死锁条件(同时满足):
+   		1.互斥条件:任务中使用的资源中至少有一个无能共享
+   		2.至少有一个任务必须持有资源并且正在等待其他任务所持有的资源
+   		3.资源不能被抢占
+   		4.必须有循环等待
+
+   util.concurrent包:
+   	1.CountDowmLatch:带锁计时器
+   		new CountDownLatch(int count)创建以count开始的CountDownLatch
+   		.await():若计数不为零,则当前线程阻塞直到计数为零
+   		.countDown():计数-1 (最低减到 0 )
+   		
+   	2.CyclicBarrier:群屏障
+   		new CyclicBarrier(int parties, Runnable barrierAction):
+          		parties - 在启动 barrier 前必须调用 await() 的线程数
+			barrierAction - 在启动 barrier 时执行的命令；如果不执行任何操作，则该参数为 null
+			
+	3.DelayQueue:储存实现Delayed接口的优先队列
+		*当做延时任务的话,也要实现Runnable接口
+		
+		Delayed接口:
+		   需要实现:
+			1.getDelay();
+				剩余时间
+			2.compareTo();
+				比较
+				
+	4.PriorityBlockingQueue:
+		new PriorityBlockingQueue(int initialCapacity, Comparator<? super E> comparator) 
+          	使用指定的初始容量创建一个 PriorityBlockingQueue，并根据指定的比较器对其元素进行排序
+	
+		
+   		
  	
 =============================================================
 代理:

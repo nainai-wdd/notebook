@@ -1,6 +1,11 @@
  --illegal-access=deny
   #mybatis:
-     快速入门(maven工程里)
+  
+  *核心思想:
+  	1.动态代理设计模式
+  	2.反射
+  
+   *快速入门(maven工程里)
 	1.在pom.xml文件中添加mybatis坐标
 	2.编写传递数据的实体类(domin)记得implements Serializable
 	3.编写dao接口,写方法
@@ -61,7 +66,7 @@
 
      OGNL表达式：
 	Object Graphic Navigation Language
-	对象	图	导航	   语言
+	对象		图	导航	   	语言
 	
 	它是通过对象的取值方法来获取数据。在写法上把get给省略了。
 	比如：我们获取用户的名称
