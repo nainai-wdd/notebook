@@ -374,6 +374,8 @@ IO流:
  	*volatile关键字:
  		1）保证可视性
 　　		2）禁止进行指令重排序。
+	*Atomic数据类型:
+		1.保证自增自减等操作的原子性
  	*synchronized关键字:
  		1.需要将域设置为私有,即private synchronized.
  		2.synchronized static可以锁静态代码块(类上的锁)
@@ -475,8 +477,13 @@ IO流:
    		   while(触发条件)
    			wait();
    			
-   		2.把要共享的资源放入BlockingQueue中(生产者-消费者模型)
-   	   
+   		2.把要共享的资源放入BlockingQueue接口中(生产者-消费者模型)
+   	   	   常用BlockingQueue实例：
+   	   	   	1.ArrayBlockingQueue<>	：固定容量
+   	   	   	2.SynchronousQueue<>		：容量为1   	   	
+   	   	   	3.PriorityBlockingQueue<>	：优先队列
+   	   	   	4.LinkedBlockingDeque<>, LinkedBlockingQueue<>
+   	   	   	5.DelayQueue			：只放Delay的优先队列
    		3.使用PipedReader/Write  在线程间传递信息
    	   
    	*死锁条件(同时满足):
@@ -486,18 +493,22 @@ IO流:
    		4.必须有循环等待
 
    util.concurrent包:
-   	1.CountDowmLatch:带锁计时器
+   	1.CountDownLatch:计时锁存器
    		new CountDownLatch(int count)创建以count开始的CountDownLatch
+   	    
    		.await():若计数不为零,则当前线程阻塞直到计数为零
    		.countDown():计数-1 (最低减到 0 )
    		
    	2.CyclicBarrier:群屏障
-   		new CyclicBarrier(int parties, Runnable barrierAction):
+   		  new CyclicBarrier(int parties, Runnable barrierAction):
           		parties - 在启动 barrier 前必须调用 await() 的线程数
-			barrierAction - 在启动 barrier 时执行的命令；如果不执行任何操作，则该参数为 null
+			barrierAction - 在启动 barrier 时执行的命令；(由最后个线程执行)
+						如果不执行任何操作，则该参数为 null
+	    
+			.await():等待CyclicBarrier对象启动,且barrierAction执行完毕
 			
-	3.DelayQueue:储存实现Delayed接口的优先队列
-		*当做延时任务的话,也要实现Runnable接口
+	3.DelayQueue:储存实现Delayed 接口的优先队列
+		*存延时任务的话,存入目标也要实现Runnable接口
 		
 		Delayed接口:
 		   需要实现:
@@ -506,13 +517,75 @@ IO流:
 			2.compareTo();
 				比较
 				
-	4.PriorityBlockingQueue:
+	4.PriorityBlockingQueue:带阻塞功能的优先队列
 		new PriorityBlockingQueue(int initialCapacity, Comparator<? super E> comparator) 
           	使用指定的初始容量创建一个 PriorityBlockingQueue，并根据指定的比较器对其元素进行排序
 	
 		
-   		
- 	
+   	5.ScheduledExecutor:有计划功能的线程控制器
+   	   ScheduledExecutorService接口:
+   	   	实例:
+   	   		1.Executors.newScheduledThreadPool
+   	   		2.ScheduledThreadPoolExecutor(int corePoolSize,
+                                   ThreadFactory threadFactory,
+                                   RejectedExecutionHandler handler)
+                               分别存在(1),(1.2)参数的构造器
+   	   	方法:
+   	   		1.schedule(Callable<V> callable, long delay, TimeUnit unit) 
+          			创建并执行在给定延迟后启用的 ScheduledFuture, Runnable同理
+			2.scheduleAtFixedRate(Runnable command, long initialDelay, long period, TimeUnit unit)
+ 				创建并执行一个周期性 开始 的任务
+ 			3.scheduleWithFixedDelay(同上)
+ 				创建并执行一个周期性 延迟 的任务
+ 				
+ 	6.Semaphore:信号锁（分发许可）
+ 	   实例：
+ 	   	new Semaphore（int permits）
+ 	   方法：
+ 	   	1.acquire(int permits) 
+          		从此信号量获取permits个许可
+          	2.release(int permits) 
+          		释放permits个许可，将其返回给信号量
+          	  ps：
+          	  	1.对于1.2，无参形式相当于permits == 1；
+          	  	2.	     阻塞可中断
+          	  	3.存在Uninterruptibly形式
+          	  	
+          	3.drainPermits() 
+          		获取并返回立即可用的所有许可。
+          		
+      7.Exchanger：交换栅栏
+         .exchange(V x, long timeout, TimeUnit unit) 
+		等待另一个线程到达此交换点，然后将给定的对象传送给该线程，同时接收该线程的对象。
+		（除非当前线程被中断，或者超出了指定的等待时间）
+		
+	并发下性能调优:
+		ReadWriteLock接口:
+			读写锁,可被多进程读取,但是只能被一个进程写入,且写入时无法读取
+		实现:
+			new ReentrantReadWriteLock(boolean fair) :参数为null时默认(非公平)
+          		   使用给定的公平策略创建一个新的 ReentrantReadWriteLock。
+		方法:
+			1.readLock() :返回用于读取操作的锁。
+      		2.writeLock():返回用于写入操作的锁
+      		
+      活动对象:
+        *特点:
+      	1.每个对象都有自己的工作线程
+      	2.每个对象都将维护对他自己的域的的全部控制权
+      	3.所有在活动对象之间的通信都将以在这些对象之间的消息形式发生
+      	4.活动对象之间的所有消息都要排队
+      	
+        *实现方式:
+        	1.对象内包含一个Executors.newSingleThreadExecutor
+        	2.任务以内部类的形式存在
+        	3.方法返回Future对象 
+        	   Future 方法(){
+        		return exec.submit(new Runnable{
+        			public void run(){}
+        		});
+        	    }
+        	4.用阻塞容器接收Future对象
 =============================================================
 代理:
    1.静态代理:
