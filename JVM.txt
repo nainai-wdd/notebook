@@ -316,3 +316,335 @@
 		6.查看熬过收集器后剩余对象的年龄分布信息
 			-XX:+PrintTenuringDistribution
 			-Xlog:gc+age=true
+=====================================================================
+JVM性能监控，故障处理工具：
+   基础工具:
+	1.jps：虚拟机进程状况工具
+	   命令格式：
+	   	jps [options] [hostid]
+	   主要选项:
+	   	-q :只输出LVMID
+	   	-m :输出虚拟机进程启动是传递给主类main()函数的参数
+	   	-l :输出主类的全名,如果进程执行的是jar包,则输出jar路径
+	   	-v :输出虚拟机进程启动时的JVM参数
+	   	
+	2.jstat:虚拟机统计信息监视工具	
+	   命令格式:
+	   	jstat [option vmid [interval[s|ms] [count]]]
+	   主要选项:
+	   	-class :监视类加载,卸载数量,总空间以及类装载锁耗费的时间
+	   	-gc	  :监视java堆状况,包括Eden区,2个Survivor区,老年代,永久代等的容量,已用空间,垃圾收集时间合计等消息
+	   	-gc...
+	   	-compiler:输出即使编译过的方法,耗时等信息
+	   	-printcompilation:输出已经被即使编译的方法
+	   
+	3.jinfo:配置信息工具:
+	   命令格式:
+	   	jinfo [option] pid
+	   -flag name=value :在运行期修改部分参数值(不赋值为查询)
+	   -sysyprops
+	   
+	4.jmap:内存映像工具
+	   命令格式:
+	   	jmap [option] vmid
+	   主要选项:
+	   	-dump	:生成java堆转储快照.格式为: -dump:[live,]format=b,file=<filename> live说明是否只dump出存活对象
+	   	-finalizerinfo:显示在F-Queue中等待执行的finalize方法的对象(linux和Solaris有效)
+	   	-heap	:显示java堆详细信息(linux和Solaris有效)
+	   	-histo:显示堆中对象统计信息
+	   	-permstat:
+	   	-F:强制生成dump快照
+	   	
+	 5.jhat:虚拟机堆转储快照分析工具
+	 
+	 6.jstack:java堆栈跟踪工具
+	    命令格式:
+	 	jstack [option] vmid
+	    主要选项:
+	    	-F	:强制输出线程堆栈
+	    	-l	:除堆栈外,显示关于锁的附加信息
+	    	-m	:如果调用到本地方法的话,可以显示c/c++的堆栈
+	    	
+	    PS:JDK5之后, Thread类新增getAllStackTraces()方法,可以获取虚拟机中所有线程的StackTraceElement对象
+--------------------------------------------------------------------
+   可视化故障处理工具:
+   	JHSDB:基于服务性代理的调试工具
+   	.
+   	.
+   	.
+   	
+   	
+   	
+   	
+=====================================================================
+类文件结构:
+	0—3	：CAFE BABE 魔数
+	4-5	：次版本号
+	6-7	：主版本号
+	8	：常量池入口（空着）
+	9	：常量池入口（常量池容量计数器，从1开始计数）
+	*常量表集合:
+	CONSTANT_info
+	{
+	u1	：tag	项目
+	index / info内容
+	...
+	}	//字符串最长65535，64kb大小
+	...
+	
+	u2	：access_flags	访问标志
+	u2	：this_class	类索引
+	u2	：super_class	父索引
+	
+	u2	：interfaces_count	接口计数器
+	u2	：interface
+	...
+	
+	u2	：fields_count	字段计数器
+	字段表集合:
+	{
+	u2	：access_flags	访问标志
+	u2	：name_index	简单名称 	的索引（常量池中）
+	u2	：descript_index描述符 		的索引（常量池中）
+	
+	u2	：attributes_count
+	attribute_info{}
+	}...
+
+	
+	u2	: method_count	方法计数器
+	方法表集合
+	{
+	u2	：access_flags	访问标志
+	u2	：name_index	简单名称 	的索引（常量池中）
+	u2	：descript_index描述符 		的索引（常量池中）
+	
+	u2	：attributes_count
+	attribute_info
+	{
+	u2	：attribute_name_index	属性名	的索引（常量池中）
+	u4	：attribute_length		属性值长度
+	u1	: info					长度为attribute_length的任意结构
+	...
+	}
+	...
+	}
+	...
+	
+	
+PS：描述符（字符串）
+	1.字段的描述符：
+		【[】数据类型
+	2.方法的描述符：
+		（参数列表的数据类型）返回值
+	
+Ps：attribute_info
+	{
+	u2	：attribute_name_index	属性名	的索引（指向CONSTANT_Utf8_info型常量）
+	u4	：attribute_length		属性值长度
+	u1	: info					长度为attribute_length的任意结构
+	...
+	}
+	
+	常用属性：
+		1.Code属性：
+		u2：attribute_name_index	"Code"的索引
+		{
+		u2：attribute_length		属性长度
+		u4：max_stack				最大操作栈深度
+		u2：max_locals				局部变量所需的存储空间(单位:slot 变量槽)
+		u4：code_length				字节码指令长度(实际只能使用u2大小)
+		{
+		u1：code					字节码指令
+		}...
+		u2：exception_table_length			异常表长度
+		{
+		u2：start_pc		字节码抓取范围的起始行
+		u2：end_pc							最后行
+		u2：handler_pc		发生异常后跳转的处理行
+		u2：catch_type		要抓取异常	的索引（CONSTANT_Class_info）
+		}...
+		u2				：attributes_count	内部属性表长度
+		{
+		attribute_info	：attributes		内部属性表
+		}...
+		}
+		
+		ps：所有非静态方法默认有一个this参数
+		
+		2.Exceptions属性：
+		u2：attribute_name_index	指向"xceptions"的索引
+		u4：attribute_length		属性长度
+		u2：attribute_of_exceptions	异常个数
+		u2：exception_index_table	异常类型
+		...
+		
+		3.LineNumberTable属性：
+		用于描述java源码行号与字节码行号（字节码的偏移量）之间的关系
+		u2：attribute_name_index
+		u4：attribute_length
+		u2：line_number_table_length
+		{
+		u2：start_pc	字节码行号
+		u2：line_number	java源码行号
+		}...
+		
+		4.LocalVariableTable及LocalVariableTypeTable属性
+		描述栈帧中局部变量表的变量的变量 与 java源码中定义的变量之间的关系
+		
+		5.SourceFile及SourceDebugExtension属性
+		用于记录生成这个Class文件的源码文件名称
+		
+		6.ConstantValue属性
+		通知虚拟机自动为静态变量赋值
+		
+		7.InnerClasses属性
+		记录内部类与宿主类之间的关联
+		
+		8.Deprecated及Synthetic属性
+		Deprecated，表示不推荐使用的类或方法或者字段
+		Synthetic，表示此字段或者方法并不是由java源码直接产生的
+		ps：attribute_length必须等于0；
+		
+		9.StackMapTable属性
+		位于Code属性的属性表中，在虚拟机类加载的字节码验证阶段被新类型检查验证器使用，
+		目的在于代替以前比较消耗性能的基于数据流分析的累类型推到验证器。
+		
+		10.Signature属性：
+		可以出现于类，字段和方法表结构的属性表中，用于记录泛型签名信息
+		
+		11.BootstrapMethods属性
+		用于保存invokedynamic指令引用的引导方法限定符
+		
+		12.MethodParameters属性
+		用来记录方法的各个形参名称和信息（jdk8之后出现，有利于程序的传播和二次利用）
+	
+		13.模块化相关属性：
+		
+		14.运行时注解相关属性：
+			1.RuntimeVisibleAnnotations
+			2.RunTimeInvisibleAnnotations
+			3.RuntimeVisibleParameterAnnotations
+			4.RunTimeInvisibleParameterAnnotations
+			5.RuntimeVisibleTypeAnnotations
+			6.RunTimeInvisibleTypeAnnotations
+			
+			RunTimevisibleAnnotations属性结构：
+			u2：attribute_name_index	注解类型名缩影(指向Utf8)
+			u4：attribute_length		属性值长度
+			u2：num_annotations			注解数量
+			{
+			u2：Type_index				注解名的索引 （指向Utf8）
+			u2：num_element_value_pairs	数组计数器
+			element_value_pairs			键值对
+			...
+			}
+			...
+   	
+   	字节码指令简介:(T:数据类型 b，c，s，i，l，f，d，a)
+		1.加载和存储指令:
+			1.将局部变量加载到操作栈：
+				Tload	（支持32位以上的数据类型）
+			2.将一个数值从操作数栈储存到局部变量表：
+				Tstore	（支持32位以上的数据类型）
+			3.将一个常量加载到操作数栈：
+				1.Tipush		（b，s）
+				2.ldc
+					ldc_w ,	ldc2_w
+				3.Tconst_<T>	（i，l，f，d）
+					aconst_null	, iconst_ml
+			4.扩充局部变量表的访问索引的指令：
+				wide
+				
+		2.运算指令：
+			1.加法指令：
+				Tadd	（i，l，f，d）
+			2.减法指令：
+				sub		（i，l，f，d）
+			3.乘法指令：
+				mul		（i，l，f，d）
+			4.除法指令：
+				Tdiv	（i，l，f，d）
+			5.求余指令：
+				Trem	（i，l，f，d）
+			6.取反指令：
+				Tneg	（i，l，f，d）
+			7.位移指令：
+				Tshl,Tshr,Tushr,（i，l）
+			8.按位或指令：
+				Tor		（i，l）
+			9.按位于指令：
+				Tand	（i，l）
+			10.按位异或指令：
+				Txor	（i，l）
+			11.局部变量自增指令：
+				iinc
+			12.比较指令：
+				Tcmpg,Tcmpl	（f，d）,lcmp
+			
+		类型转换指令：
+			1.自动宽化类型转换（精度不变）：
+				int  -> long, float, double
+				long -> float, double
+				float-> double
+			2.强制类型转换指令
+				T2T
+				
+				1.整数窄化时，去高位，同时可能会有符号问题
+				2.浮点数窄化为整数时，向零取整，然后向0方向取最接近的值（无符号问题）
+					NAN -> 0
+				3.double -> float
+					1. 向最接近数舍入模式舍入，
+						1.float可以表示
+						2.float无法表示
+							1.得到float的正或负 0
+							2.得到float的正或负无穷大
+					double的NAN -> float的NAN
+					
+		对象创建与访问指令：
+			1.创建类实例的指令：new
+			2.创建数组的指令  ：newarray，anewarray，multianewarray
+			3.访问类字段	  ：getfield，putfield，getstatic，putstatic
+			4.把一个数组元素加载到操作数栈
+				Taload	（b,c,s,i,l,f,d,a）
+			5.将一个操作数栈的值储存到数组元素中
+				Tastore	（b,c,s,i,l,f,d,a）
+			6.去数组长度的指令：arraylength
+			7.检查类实例类型的指令：instanceod， checkcast
+		
+		操作数栈管理指令：
+			1.将操作数栈的栈顶一个或者两个元素出栈：
+				pop， pop2
+			2.复制栈顶一个或者两个数值并将复制值或者双份的复制值重新压入栈顶
+				dup_x1, dup2_x1, dup_x2, dump2_x2
+			3.将栈最顶端的两个数值互换：
+				swap
+		
+		控制转移指令
+			1.条件分支：
+				ifeq，iflt，ifle，ifne，ifge，ifnull，ifnonnull，if_icmpeq...
+			2.复合条件分支
+				tableswitch，lookupswitch
+			3.无条件分支
+				goto，goto_w，jsr，jsr_w，ret
+				
+		方法调用和返回指令：
+			1.invokevirtual指令：用于调用对象的实例方法。
+			2.invokeinterface指令：用于调用接口方法，运行时搜索一个实现了这个接口方法的对象
+			3.invokespecial指令：用于调用一些需要特殊处理的实例方法，（初始化方法，私有方法，父类方法）
+			4.invokestatic指令：用于调用静态方法
+			5.invokedynamic指令：用于在运行时动态解析出调用点限定符所引用的方法。并执行该方法
+			
+			返回指令：
+				1.Treturn	（i，l，f，d，a）
+				2.return：
+					用与void方法，实例初始化方法，类和接口的类初始化方法
+					
+		异常处理指令：
+			athrow指令：显示抛出异常指令
+			还有一些异常java虚拟机会自动抛出
+			
+		同步指令：
+			monitorenter：以栈顶元素为锁，开始同步
+			monitorexit：退出同步
+			
