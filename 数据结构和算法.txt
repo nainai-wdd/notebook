@@ -1,0 +1,71 @@
+二叉树遍历非递归遍历
+	先序遍历：
+	1.利用辅助栈实现
+		while（T || !stack.isEmpty）{
+			while（T){
+				stack.push(T);
+				sout(pop);	// 访问位置
+				T = T.left;
+			}
+			pop = stack.pop();
+			pop = pop.right;
+		}
+	
+	中序遍历：
+	1.利用辅助栈实现
+		while（T || !stack.isEmpty）{
+			while（T){
+				stack.push(T);
+				T = T.left;
+			}
+			pop = stack.pop();
+			sout(pop);	// 访问位置
+			pop = pop.right;
+		}
+	2.右线索化+回溯
+		1.若当前树的根节点p有左孩子且未被线索化：将其左孩子的最右结点（可为左孩子本身）指向p，即右线索化，然后p = p->lChild；
+		2.若p有左孩子但已被线索化，说明该p是回溯上来的，即左孩子已经被访问了，则释放线索化的指针；
+		3.若p无左孩子，打印p，向上回溯(即p = p->rChild）
+	
+	后序遍历：
+	1.利用两个辅助栈：
+		先序遍历的顺序是根节点-左儿子-右儿子，故只需将先序遍历的左右调换并把访问方式打印改为压入另一个栈即可
+	2.利用辅助栈实现：
+		在右子树返回时才访问，因此需要设置一个指示器显示当前节点是否是从右节点返回
+		例如：
+		增加一个变量Prev记录当前节点Curr的上一个节点。
+
+	　　　　若Prev为空(Curr节点是根节点)或者Prev是Curr的父节点，将Curr节点的左孩子和右孩子分别压入栈；
+	　　　　若Prev是Curr的左儿子，则将Curr的右儿子压入栈；
+	　　　　否则Prev是Curr的右儿子，访问Curr;
+	
+	while（!stack.isEmpty）{
+		curr = stack.peek;
+		if(prev == null || prev.left == curr || prev.right == curr){
+			if(curr.left != null)
+				stack.push(curr);
+			if(curr.right != null)
+				stack.push(curr);
+		}
+		else if(curr.left == prev){
+			if(curr.right)
+				stack.push(curr);
+		}
+		else{
+			sout(curr);		//访问节点
+			stack.pop();
+		}
+		prev = curr;
+	}
+	
+	层序遍历：
+	1.利用辅助队列：
+	queue.add(curr);
+	while(!queue.isEmpty){
+		curr = queue.remove();
+		sout(curr);
+		if(curr.left != null)
+			queue.add(curr.left);
+		if(curr.right != null)
+			queue.add(curr.right);
+	}
