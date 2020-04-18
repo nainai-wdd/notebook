@@ -69,3 +69,141 @@
 		if(curr.right != null)
 			queue.add(curr.right);
 	}
+	
+================================================================
+union—find 算法
+	API：
+				UF(int N)				初始化N个触点
+		void 	union(int p, int q)		连接p，q
+		int 	find(int p)				返回p的连通分量标识符
+		boolean connected(int p, int q)	p，q在同一个连通分量则true
+		int 	count()					连通分量的数量
+		
+	quick-find：基本不用，效率太低
+		为相互连通的触点设置相同id，id[]
+		
+	qucik-union：基本用加权的
+		1.用parent[]记录当前索引代表的触点直接连接的一个触点(父触点)
+		2.同一连通分量的触点连接在同一个根触点
+		PS：1.像是一个只能从子节点找到父节点的树
+			2.由于连接的方式固定，可能会导致树不平衡（不断长高）
+			
+	加权的qucik-union：
+		1.使用int[] sz 记录各个根节点所对应的分量大小
+		2.根据分量大小，总是把分量小的根连接到分量大的根上
+		PS：一定程度上保证了树不会过高，数高等于max（log count， 最高子树数高）
+		
+		例子:
+		public void union(int p, int q){
+			int i1 = find(p);
+			int i2 = find(q);
+			if(i1 > i2){
+				parent[i2] = i1;
+				sz[i2]++;
+			}
+			else{
+				parent[i1] = i2;
+				sz[i1]++;
+			}
+		}
+		
+	路径压缩的加权quick-union：最优算法
+		1.在find()中添加一个循环,根据不同策略压缩路径(扁平化)
+		常用策略:路径减半压缩
+		public int find(int p) {
+			validate(p);
+			while (p != parent[p]) {
+				parent[p] = parent[parent[p]];    // path compression by halving
+				p = parent[p];
+			}
+			return p;
+		}
+		
+================================================================
+无向图：
+	Graph：
+		API：
+		*Graph()				初始化无向图
+		*addEdge(int p, int q)	增加一条边
+		*adj(int v)				返回与v直接相连的节点
+		*V()					返回总节点数
+		*E()					返回总边数
+		*degree(int v)			返回v的度				
+	
+	解决类：
+	单点的连通性：DepthFirstSearch
+		1.dfs遍历连通的节点
+		
+	单点路径：DepthFirstPaths
+		1.dfs遍历节点时，
+		2.用int[]记录每个节点的父节点（上一个节点）
+		
+	单点最短路经：BreadthFirstPaths	
+		1.bfs遍历节点时，
+		2.用int[]记录每个节点的父节点（上一个节点）
+		
+	连通性：CC
+		1.对所有节点进行dfs遍历，
+		2.同一次遍历的节点属于同一个连通域（遍历时用int[]记录每个节点所处域的标识符）
+		
+	检测环：Cycle
+		1.对所有节点进行dfs遍历，并且设置int[] path 记录路径
+		2.若遍历到已访问节点，则说明有环
+		3.把环的路径记录下来（Stack）
+	双色问题（图的二分性）：TwoColor
+		1.对所有节点进行dfs遍历，并且设置boolean[] color 记录颜色
+		2.遍历时设置当前节点的颜色为父节点颜色取反
+		3.若遍历到已访问，且节点颜色和当前节点相同，则不是二分图，指示器设置false
+---------------------------------------------------------------------------------
+符号图：SymbolGraph 
+	private Map<String, Integer> st;
+	private String[] keys;
+	private Graph G;
+	
+	API：
+	SymbolGraph()				利用构造函数，预处理得到st，keys，G（读两遍图）
+	boolean contains(String s)	图中是否包含s字符节点
+	int 	index(String s)		获取字符对应的整型
+	String 	name(int v)			获取整型对应的字符
+	Graph 	G()					获取对应的整型图
+---------------------------------------------------------------------------------
+有向图：Digraph
+	API基本与无向图相同，
+	多一个Digraph reverse（）	获取该图的反向图
+	
+	解决类：
+	单点和多点的可达性：DirectedDFS
+		dfs（）遍历。
+	单点有向路径
+		1.dfs（）遍历
+		2.用int[] path记录每个节点的父节点
+	单点最短有向路径
+		1.bfs（）遍历
+		2.用int[] path记录每个节点的父节点
+	有向环检测
+		1.对所有节点进行dfs遍历，并且设置int[] path 记录路径
+		2.用boolean[] onStack 记录遍历时压入栈中的节点（入栈设为true，出栈设为false）
+		3.若遍历到已访问，且还在栈中的节点，则说明有环
+		4.把环的路径记录下来（Stack）
+	深度优先的定点排序
+		1.dfs遍历节点时，
+		2.dfs先序遍历位置，把节点存入pre队列
+		3.dfs后序遍历位置，把节点存入post队列
+		4.dfs后序遍历位置，把节点存入reversePost堆栈
+	优先级限制下的调度问题
+		1.创建排序对象，传入图，预处理
+		2.从reversePost遍历节点，即为正确的优先顺序
+	拓扑排序
+		同上
+	强连通性
+		1.获取反向图的reversePost
+		2.对这个reversePost进行dfs遍历
+		3.同一次遍历的节点属于同一个连通域（遍历时用int[] id记录连通域标识符）
+	顶点对的可达性
+		1.创建DirectedDFS[] 预处理所有（g，v）对
+		2.调用对应数组元素DirectedDFS的marked
+		
+	
+
+		
+		
