@@ -1,3 +1,20 @@
+二分查找：
+public int find(int result, int[] collection){
+	int left = 0;
+	int right = end;
+	int mid;
+	while (left < right) {
+		mid = (left + right) >>> 1;		//左中位数
+		if(collection[mid] == result)
+			return mid;
+		if (collection[mid] < result)
+			left = mid + 1;				//从左逼近
+		else
+			right = mid;
+	}
+	return left;						/若无，则返回临近值（左逼近返回ceiling，右逼近返回floor）
+}
+=====================================================================
 二叉树遍历非递归遍历
 	先序遍历：
 	1.利用辅助栈实现
