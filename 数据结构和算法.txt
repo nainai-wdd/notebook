@@ -15,6 +15,99 @@ public int find(int result, int[] collection){
 	return left;						/若无，则返回临近值（左逼近返回ceiling，右逼近返回floor）
 }
 =====================================================================
+sort：排序
+	1.选择排序：
+		1.选择 2.交换到正确的位置
+		时间复杂度:
+			1.与输入无关,平均N + N²/2
+			2.O(n²)	
+			
+	2.插入排序:
+		1.使序列逐步有序
+		2.子序列长度加一，新增元素
+		3.使新元素插入正确的位置(冒泡)，新序列排序完成
+		4.重复2.3
+		时间复杂度:
+			1.和输入的有序程度成正比,平均N²/2 ,最好N-1 ,最坏N²
+			2.O(n²)
+			
+	3.shell：希尔排序:
+		*是插入排序对长序列的优化算法
+		1.把一个序列分为h组有序序列(每个序列的步长为h)
+		2.对h组序列进行插入排序，实现h有序数组
+		3.缩小h，重复1,2步骤，直到h = 1；
+
+		时间复杂度：
+			1.时间复杂度与h组成的递增序列有关，
+				ps：常用递增序列：h = 3*h + 1；O(n^3/2)
+			2.小于O(n²)
+			
+	4.merge：归并排序
+		0.类似于后序遍历,左右都处理好了才执行合并
+		1.sort左
+		2.sort右
+		3.merge(a, lo, mid, hi)
+			mid左边一个有序列，右边一个有序列，比较两个有序列的最小值，依次放入目标数组
+			int i = head, j = mid+1;
+			for (int k = i; k < rear+1; k++){
+				if (i > mid){ a[k] = aux[j]; j++; }
+				else if (j > rear){ a[k] = aux[i]; i++; }
+				else if (aux[i].compareTo(aux[j]) < 0){ a[k] = aux[i]; i++; }
+				else { a[k] = aux[j]; j++;}
+			}
+		实现：
+			1.自顶向下（递归）
+				更快，我自己推荐用这个，也好优化
+				
+			2.自底向上（循环）
+				简单，
+		优化：
+			1.对小规模使用插入排序
+			2.检查数组是否已经有序
+				if(a[mid].compareTo(a[mid + 1]) <= 0) continue;
+			3.辅助数组和目标数组每层互换角色，避免每次都要把元素复制到辅助数组中
+			
+	5.quick：快排
+		0.类似于先序遍历，把元素排成大小两个子序列，然后再排子序列，直到所有元素都被排好
+		1.partition（a,lo,hi）
+			private static int partition(Comparable[] a, int lo, int hi){
+				int lt = lo, gt = hi+1;
+				Comparable v = a[lo];
+				while(true){
+					while ( less(a[++lt],v)) if (lt == hi) break;
+					while ( less(v,a[--gt])) ;
+					if (lt >= gt) break;
+					exch(a,lt,gt);
+				}
+				exch(a,lo,gt);
+				return gt;
+			}
+		2.sort左
+		3.sort右
+		优化：
+			1.对小规模使用insertSort
+			2.三取样切分，得到更好的切分，若hi设置为取样最大值，则可以省略 lt的边界条件；
+			3.对于有大量重复元素的序列，使用三向切分的快速排序
+				1.顺序遍历（指针i），大的放最右边（指针gt），小的放最左边（指针lt），相等的不移动处于指针lt和i之间
+				2.好处：[lt，gt]之间的不用排序
+				3.坏处：交换次数变多
+		
+=====================================================================
+优先队列：
+	二叉堆实现：
+		时间复杂度：插入log(N) 弹出堆顶元素log(N)
+	1.用数组维护一个二叉堆,
+		为了方便计算索引，一般不使用0号位置，或者在0号位置放置哨兵
+	2.关键算法：
+		sink()
+		swim()
+	3.插入：插到堆底，对堆底元素调用sink()
+	4.弹出：
+		1.堆顶元素和堆底元素互换，
+		2.弹出堆底元素
+		3.对堆顶元素调用swim()
+	
+=====================================================================
 二叉树遍历非递归遍历
 	先序遍历：
 	1.利用辅助栈实现
@@ -220,7 +313,55 @@ union—find 算法
 		1.创建DirectedDFS[] 预处理所有（g，v）对
 		2.调用对应数组元素DirectedDFS的marked
 		
+---------------------------------------------------------------------------------
+最小生成树：
+	数据类型：
+	1.Edge：带权重的边
+		their()
+		other(v)
+		weight()
+	2.EdgeWeightedGraph：加权无向图
+		用一个邻接表存储Edge
+		
+Prim算法：
+	将边以贪婪算法的形式，不断连接到已有生成树中，并记录这些边
 	
-
+	LazyPrimMST：延迟prim生成最小生成树（通过边的信息来处理）
+		boolean[] marked;
+		Queue<Edge> mst;
+		PriorityQueue<Edge> pq;
+		
+		1.访问起始顶点，vist（G，v）遍历edge，加入pq
+		2.pq弹出other节点未访问过的优先edge，将这个edge加入mst，并标记marked[v] = true;
+		3.（vist（G，v））同时遍历other节点的邻接edge，将other节点未访问过的edge加入pq
+		4.重复以上
+		
+		5.时间复杂度ElogE，空间复杂度E
+		
+	PrimMST：即时prim生成最小生成树（通过节点信息来处理）
+		boolean[] marked;		记录是否被访问
+		Edge[] edgeTo;			未加入节点连接到已有生成树最小权重所对应的边，加入后即为最小生成树的边
+		double[] distTo;		未加入节点连接到已有生成树的最小权重，加入后即为加入时边的权重
+		IndexMinPQ<Double> pq;	用来存储节点对应权重的优先队列，索引代表节点，值为权重
+		
+		1.将distTo[0] = 0.0 加入pq的0索引位置；
+		2.弹出一个权重，获取其索引（顶点号 v）
+		3.vist（G，v）marked[v] = true, 遍历这个邻接edge，获取被访问过的 w = other(v) 
+		根据 distTo[w] > edge.weight()  给edgeTo[]，distTo[]赋值，更新或插入 pq 
+		4.重复2，3；
+		
+		5.时间复杂度ElogV，空间复杂度V
+		
+Kruskal算法：
+	将边以贪婪算法的形式，直接加入MST中
+	
+	KruskalMST：
+		Queue<Edge> mst;	存储最小生成树的边
+		Proirity<Edge> pq;	整理所有边优先级的队列
+		
+		1.将所有边加入优先队列
+		2.弹出优先的edge，获取其v,w两个节点，
+		3.利用UF算法，判断v,w是否已经连通，
+		4.连通则跳过，未连通则将其连通，并将边加入mst
 		
 		
