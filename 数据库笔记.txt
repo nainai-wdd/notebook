@@ -230,6 +230,9 @@
 -------------------------------------------------------------------------------------
 
     **关系代数**:	   ** r(R)和s(S) **	
+	
+	*MySQL不支持intersect和except
+	
 	1.选择运算:	select * where<condition>
 	2.投影运算:	select distinct 列名
 	3.并运算:r union s							//加关键字all不去重
@@ -340,7 +343,34 @@
 	占位符:
 	*_:单个任意字符
 	*%:多个任意字符
+----------------------------------------------------------------------------------------
+流程控制语句
+1.
+	CASE case_value
+		WHEN when_value THEN statement_list
+		[WHEN when_value THEN statement_list] ...
+		[ELSE statement_list]
+	END CASE
+2.search_condition是布尔表达式
+	CASE
+		WHEN search_condition THEN statement_list
+		[WHEN search_condition THEN statement_list] ...
+		[ELSE statement_list]
+	END CASE
+3.处理任何子句不匹配任何值的情况，请使用包含空 BEGIN ...END块
+	CREATE PROCEDURE p()
+	  BEGIN
+		DECLARE v INT DEFAULT 1;
 
+		CASE v
+		  WHEN 2 THEN SELECT v;
+		  WHEN 3 THEN SELECT 0;
+		  ELSE
+			BEGIN
+			END;
+		END CASE;
+	  END;
+----------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------
 ##临时表:临时产生独立的表,辅助操作数据库,连接断开后消失        
 
