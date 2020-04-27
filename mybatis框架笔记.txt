@@ -8,7 +8,7 @@
    *快速入门(maven工程里)
 	1.在pom.xml文件中添加mybatis坐标
 	2.编写传递数据的实体类(domin)记得implements Serializable
-	3.编写dao接口,写方法
+	3.编写dao接口,写抽象方法
 	4.编写dao接口的映射文件.xml
 	<mapper namespace="接口的全类名">	//命名空间,忘了什么意思
 	   <关键字 id=""(对应接口中的方法)

@@ -154,7 +154,7 @@ JavaScript：一门客户端脚本语言
 		不写var：代表全局变量
 
 	7.流程控制语句：
-		*在java中，switch可以接收
+		*在java中，switch可以接收int
 		*JavaScript中switch可以接收任意原始数据类型
       基本对象：
 	1.Function：函数（方法）对象
@@ -224,8 +224,8 @@ JavaScript：一门客户端脚本语言
 	7.Global：对象
 	        1.创建：不用创建，直接使用
 	        2.方法：
-		encodeURI():url编码
-		decodeURI():url解码
+		encodeURI():uri编码
+		decodeURI():uri解码
 
 		encodeURIComponent():url编码, 编码的字符更多 (例如 ?,/)
 		decodeURIComponent():url解码
@@ -240,7 +240,7 @@ JavaScript：一门客户端脚本语言
 	        4.URL编码：
 ------------------------------------------------------------------------------------------------
 
-BOM：Browser    object   Model浏览器对象模型 
+BOM：Browser    object   Model浏览器对象模型
 
 
 
@@ -270,10 +270,10 @@ BOM：Browser    object   Model浏览器对象模型
 		clearInterval(id)
 	3.属性:
 	       1.获取其他BOM对象
-		history
-		location
-		Navigator
-		Screen
+		history  	历史记录
+		location	地址栏
+		Navigator	封装了浏览器的信息
+		Screen		封装了操作系统的屏幕信息
 	        2.获取DOM对象
 		document
 	4.特点:
@@ -1287,7 +1287,7 @@ HTTP:超文本传输协议(Hyper Text Transfer Protocol)
 
 	3.事件绑定
 		1.jQuery标准的绑定方式
-			jq对象.时间方法(回调函数);
+			jq对象.事件方法(回调函数);
 		2.on绑定事件,off解除绑定
 			jq对象.on("事件名称",回调函数)
 			jq对象.off("事件名称")
@@ -1383,6 +1383,7 @@ HTTP:超文本传输协议(Hyper Text Transfer Protocol)
 
    ##redis
 	概念:一款高性能的NOSQL系列的非关系型数据库	//NOSQL:not only SQL
+	http://c.biancheng.net/view/4504.html
 
 	命令操作
 
@@ -1478,7 +1479,93 @@ HTTP:超文本传输协议(Hyper Text Transfer Protocol)
 				appendonly no/yes
 			
 				appendfsync always/everysec/no  每一次操作 / 每秒 / 不进行持久化
+	
+lua语言
+	Redis 支持两种方法运行脚本
+	它的命令格式为：
+	eval lua-script key-num [key1 key2 key3 ...] [value1 value2 value3 ...]
+	
+	val 代表执行 Lua 语言的命令。
+	Lua-script 代表 Lua 语言脚本。
+	key-num 整数代表参数中有多少个 key，需要注意的是 Redis 中 key 是从 1 开始的，如果没有 key 的参数，那么写 0。
+	[key1key2key3...] 是 key 作为参数传递给 Lua 语言，也可以不填它是 key 的参数，但是需要和 key-num 的个数对应起来。
+	[value1 value2 value3...] 这些参数传递给 Lua 语言，它们是可填可不填的。
+	
+	-------------------------------------------
+	例子：
+	eval "redis.call('set',KEYS[1],ARGV[1])" 1 lua-key lua-value
 
+	设置一个键值对，可以在 Lua 语言中采用 redis.call(command,key[param1,param2...]) 进行操作，其中：
+		command 是命令，包括 set、get、del 等。
+		Key 是被操作的键。
+		param1,param2...代表给 key 的参数。
+
+	脚本中的 KEYS[1] 代表读取传递给 Lua 脚本的第一个 key 参数，而 ARGV[1] 代表第一个非 key 参数。
+
+	这里共有一个 key 参数，所以填写的 key-num 为 1，这样 Redis 就知道 key-value 是 key 参数，
+	而 lua-value 是其他参数，它起到的是一种间隔的作用。
+	-------------------------------------------
+	
+	*有时可能需要多次执行同样一段脚本，这个时候可以使用 Redis 缓存脚本的功能，
+	在 Redis 中脚本会通过 SHA-1 签名算法加密脚本，然后返回一个标识字符串，
+	可以通过这个字符串执行加密后的脚本。
+	首先使用命令：
+	script load script
+	这个脚本的返回值是一个 SHA-1 签名过后的标识字符串，
+	
+	简单对象用jedis封装
+	// 缓存脚本，返回shal签名标识
+	String shal = jedis.scriptLoad("redis.call('set',KEYS[1], ARGV[1])");
+	// 通过标识执行脚本
+	jedis.evalsha(shal, 1, new String[] { "sha-key", "sha-val" });
+	// 获取执行脚本后的数据
+	String shaVal = jedis.get("sha-key");
+	--------------------------------------------------------------------------------------
+	
+	*存储对象考虑使用 Spring 提供的 RedisScript 接口，
+	实现类DefaultRedisScript
+	
+	ApplicationContext applicationContext = new ClassPathXmlApplicationContext(
+        "applicationContext.xml");
+	RedisTemplate redisTemplate = applicationContext.getBean(RedisTemplate.class);
+	// 定义默认脚本封装类
+	DefaultRedisScript<Role> redisScript = new DefaultRedisScript<Role>();
+	// 设置脚本
+	redisScript.setScriptText("redis.call('set',KEYS[1], ARGV[1]) return redis.call('get', KEYS[1])");
+	// 定义操作的key列表
+	List<String> keyList = new ArrayList<String>();
+	keyList.add("role1");
+	// 需要序列化保存和读取的对象
+	Role role = new Role();
+	role.setId(1L);
+	role.setRoleName("role_name_1");
+	role.setNote("note_1");
+	// 获得标识字符串
+	String sha1 = redisScript.getSha1();
+	System.out.println(sha1);
+	// 设置返回结果类型，如果没有这句话，结果返回为空
+	redisScript.setResultType(Role.class);
+	// 定义序列化器
+	JdkSerializationRedisSerializer serializer = new JdkSerializationRedisSerializer();
+	// 执行脚本
+	// 第一个是RedisScript接口对象，第二个是参数序列化器
+	// 第三个是结果序列化器，第四个是Reids的key列表，最后是其他参数列表
+	Role obj = (Role) redisTemplate.execute(redisScript, serializer,
+			serializer, keyList, role);
+	// 打印结果
+	System.out.println(obj);
+	--------------------------------------------------------------------------------------
+	
+	//读入文件流
+    File file = new File("G:\\dev\\redis\\test.lua");
+    byte[] bytes = getFileToByte(file);
+    Jedis jedis = (Jedis)redisTemplate.getConnectionFactory().getConnection().getNativeConnection();
+    //发送文件二进制给Redis,这样REdis就会返回shal标识
+    byte[] shal = jedis.scriptLoad(bytes);
+    //使用返回的标识执行，其中第二个参数2,表示使用2个键
+    //而后面的字符串都转化为了二进制字节进行传输
+    Object obj = jedis.evalsha(shal,2,  "key1".getBytes(),"key2".getBytes(),"2".getBytes(), "4".getBytes());
+    System.out.println(obj)
 
 ==========================================================================================================
 
@@ -1492,6 +1579,8 @@ HTTP:超文本传输协议(Hyper Text Transfer Protocol)
 			*方法名同redis中的关键字相同
 		3.关闭连接
 			jedis.close();
+	
+	
 
 
   ##jedis连接池:  JedisPool
@@ -1509,7 +1598,84 @@ HTTP:超文本传输协议(Hyper Text Transfer Protocol)
 			jedis.close();
 	*连接池工具类
 ========================================================================================================
+spring中使用redis：
+	好处：
+		封装有序列化类 使Java 对象和 Redis 的字符串进行相互转换
+		（序列化对象，从而直接存储到redis中，
+		  对象要可序列化，需要实现Serializable接口，往往要重写serialVersionUID）
+	步骤
+	1.配置Jedis.PollConfig对象
+	<bean id="poolConfig" class="redis.clients.jedis.JedisPoolConfig">
+		<!-- 最大空闲数 -->
+		<property name="maxIdle" value="50" />
+		<!-- 最大连接数 -->
+		<property name="maxTotal" value="100" />
+		<!-- 最大等待时间 -->
+		<property name="maxWaitMillis" value="20000" />
+	</bean>
+	
+	2.配置 JedisConnectionFactory
+	Spring Data Redis 方案中它提供了 4 种工厂模型。
+		JredisConnectionFactory。
+		JedisConnectionFactory。
+		LettuceConnectionFactory。
+		SrpConnectionFactory。
+		
+	<bean id="connectionFactory"
+		class="org.springframework.data.redis.connection.jedis.JedisConnectionFactory">
+		<property name="hostName" value="localhost" />
+		<property name="port" value="6379" />
+		<!--<property name="password" value="password"/> -->
+		<property name="poolConfig" ref="poolConfig" />
+	</bean>
+	
+	3.配置Spring序列化器
+	Spring 提供的方案去处理序列化，当然也可以去实现在 spring data redis 中定义的 RedisSerializer 接口，
+	在 Spring 中提供了以下几种实现 RedisSerializer 接口的序列化器。
+		GenericJackson2JsonRedisSerializer，通用的使用 Json2.jar 的包，将 Redis 对象的序列化器。
+		Jackson2JsonRedisSerializer<T>，通过 Jackson2.jar 包提供的序列化进行转换（由于版本太旧，Spring 不推荐使用）。
+		JdkSerializationRedisSerializer<T>，使用 JDK 的序列化器进行转化。
+		OxmSerializer，使用 Spring O/X 对象 Object 和 XML 相互转换。
+		StringRedisSerializer，使用字符串进行序列化。
+		GenericToStringSerializer，通过通用的字符串序列化进行相互转换。
+	键和值可以分别配置不同的序列化器
+	<bean id="jdkSerializationRedisSerializer"
+    class="org.springframework.data.redis.serializer.JdkSerializationRedisSerializer" />
+	<bean id="stringRedisSerializer"
+		class="org.springframework.data.redis.serializer.StringRedisSerializer" />
+		
+	<bean id="redisTemplate" class="org.springframework.data.redis.core.RedisTemplate">
+		<property name="connectionFactory" ref="connectionFactory" />
+		<property name="keySerializer" ref="stringRedisSerializer" />
+		<property name="valueSerializer" ref="jdkSerializationRedisSerializer" />
+	</bean>
+	
+	测试代码：
+	ApplicationContext applicationContext = new ClassPathXmlApplicationContext("applicationContext.xml");
+	RedisTemplate redisTemplate = applicationContext.getBean(RedisTemplate.class);
+	
+	Role role = new Role();
+	role.setId(1L);
+	role.setRoleName("role_name_1");
+	role.setNote ("note_l");
+	
+	redisTemplate.opsForValue().set("role_1", role);
+	Role role1 = (Role) redisTemplate.opsForValue().get ("role_1");
 
+	
+	为了使得所有的操作都来自于同一个连接，可以使用 
+	SessionCallback 或者 RedisCallback 这两个接口，
+	而 RedisCallback 是比较底层的封装，其使用不是很友好，
+	所以更多的时候会使用 SessionCallback 这个接口，
+	通过这个接口就可以把多个命令放入到同一个 Redis 连接中去执行
+	SessionCallback callBack = new SessionCallback<Role>() {
+		@Override
+		public Role execute(RedisOperations ops) throws DataAccessException {
+			ops.boundValueOps("role_1").set(role);
+			return (Role) ops.boundValueOps("role_1").get();
+		}
+	};
+    Role savedRole = (Role) redisTemplate.execute(callBack);
 
 
 
