@@ -309,7 +309,26 @@ https://mybatis.org/mybatis-3/zh/sqlmap-xml.html
 ------------------------------------------------------------------
 
   注解配置:
-
+	@Select @Insert @Update @Delete
+		value：sql语句，其中参数用#{实体类属性名称}指代
+	
+	@Results：
+		id="唯一标识"
+		value={@Result()...}
+	
+	@Result：数据库表和实体类字段对应
+		属性：
+		boolean id
+		column：数据库字段
+		property：实体类字段
+		one=@One(select = “全限定类名.方法名”，fetchType = FetchType.EAGER)一对一的级联查询
+		many=@Many(select = "",fetchType = FetchType.EAGER)一对多的级联查询
+		
+	@ResultMap(value={”@Results的id“,...}) :引用结果集和数据库表的对应关系
+	
+	在dao接口上使用@CacheNamespace(blocking = true)开启二级缓存@
+		
+		
 
 
 

@@ -13,6 +13,10 @@
 	1.web.xml中配置前端控制器控制器,并让前端控制器加载spring.xml
 	2.spring.xml配置要扫描的包
 	3.配置
+--------------------------------------------
+视图解析器：
+	InternalResourceViewResolver是最简单和最常用的视图解析器 能将视图名映射为JSP文件
+	
 		
 --------------------------------------------
 控制器类:@Controller
@@ -63,12 +67,13 @@
   # 常用注解
 	1.@RequestParam:控制器参数上
 		把请求中指定名称的参数给控制器中的形参赋值。
+		ps:利用了request.getParameter(),无法获得json格式的参数
 	  属性：
 		value：请求参数中的名称。
 		required：请求参数中是否必须提供此参数。默认值：true。表示必须提供，如果不提供将报错。
 
 	2.@RequestBody:参数上
-		用于获取请求体内容。直接使用得到是 				key=value&key=value...结构的数据。
+		用于获取（contentType:application/json）请求体内容。直接使用得到是 key=value&key=value...结构的数据。
 		get 请求方式不适用。
 	  属性：
 		required：是否必须有请求体。默认值是:true。当取值为 true 时,get 请求方式会报错。如果取值为 false，get 请求得到是 null。

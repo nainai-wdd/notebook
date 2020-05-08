@@ -129,9 +129,9 @@ final关键字
 正则表达式（pattern类）
  *字符类
 	.：	任意字符
-	\\d：	整数字符
-	\\w: 	单词字符
-	\\s:	空白符（空格，tab，换行，换页和回车）
+	\d：	整数字符
+	\w: 	单词字符
+	\s:	空白符（空格，tab，换行，换页和回车）
 		**大写视其为非**
 
 	.：	任意字符
@@ -380,7 +380,26 @@ IO流:
  		1.需要将域设置为私有,即private synchronized.
  		2.synchronized static可以锁静态代码块(类上的锁)
  	
- 	*Lock对象:
+ 	*ReentrantLock对象:
+	  内部类
+		Sync：
+			锁同步控制的基础类，子类分为公平与非公平锁。
+		使用AQS（就是Sync的父类AbstractQueuedSynchronizer)
+		状态来表示锁的持有数量。此外Sync内部还提供了释放锁、
+		获取当前持有锁的Thread对象等方法。
+		
+		FairSync：
+			FairSync重写了AQS的tryAcquire()方法，因此在请求获取锁的实现上作了调整，
+		在请求获取锁时首先判断AQS状态（锁的持有数量）是否为0。
+		若为0：判断请求队列中该线程之前是否没有在排队的线程且是可以获取锁的状态，满足条件则将当前线程设为锁的持有者。
+		否则返回false。若不为0：则判断锁的持有者是否为当前线程。如果不是，返回false。
+			
+		NonfairSync：
+			首先根据CAS返回结果判断是否可以获取锁，如果可以，
+		则直接将当前线程设为锁的持有者，否则中断自己身执行状态，加入请求队列获取锁直到获取成功。
+		
+	  创建方法：
+		new ReentrantLock(): 带参true 公平锁，false 非公平锁 ，默认非公平
  	  方法:
  	  	lock()	:获取锁,若无法获取,则线程阻塞,直到获取到锁
  	  	unLock()	:释放锁
@@ -389,6 +408,8 @@ IO流:
  	  	tryLock(long time):
  	  		1.在指定时间内尝试获取锁,超时返回false,获取返回true
  	  		2.等待期间为可中断阻塞,可以获得InterruptException
+			
+		lockInterruptibly()（中断方式获取锁）
  	  		
  	  	newCondition(): 获取lock想关联的Condition实例
  	  标准使用:
@@ -400,6 +421,9 @@ IO流:
  	  构造是可传入参数true,则为公平锁。否则默认是非公平锁。
  	  
  	*Condition类:
+		1.监视锁的对象
+		2.方法实际上通过拥有当前对象的线程执行
+		
  	   通过lock.newCondition()获得相关联的实例
  	   	1.Condition 替代了 Object 监视器方法的使用（wait、notify 和 notifyAll）
  	   在锁中
@@ -518,6 +542,7 @@ IO流:
 				比较
 				
 	4.PriorityBlockingQueue:带阻塞功能的优先队列
+	  ps：java7中加入TransferQueue取代
 		new PriorityBlockingQueue(int initialCapacity, Comparator<? super E> comparator) 
           	使用指定的初始容量创建一个 PriorityBlockingQueue，并根据指定的比较器对其元素进行排序
 	
