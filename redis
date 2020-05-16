@@ -1,0 +1,437 @@
+ ================================================================
+ =========================     redis         ====================
+ 
+ 常用配置：
+	服务器以守护进程的方式运行:
+		daemonize yes/no
+	绑定主机地址:
+		bind 127.0.0.1
+	设置服务器端口号:
+		port 6397
+	设置数据库数量:
+		databases 16
+	
+	日志配置:
+		loglevel
+		logfile 端口号.log
+ 
+	连接设置:
+	最大连接数
+		maxclients 0
+	闲置时长
+		timeout 300
+		
+	多服务快捷配置
+	include /path/server-端口号.conf
+ 
+ ===============================================================
+
+	概念:一款高性能的NOSQL系列的非关系型数据库	//NOSQL:not only SQL
+	http://c.biancheng.net/view/4504.html
+
+	特点:所有操作都是原子的,单线程操作,无需考虑并发问题
+
+	命令操作
+
+	   1.redis命令
+		*redis-cli	:连接本地的 redis 服务
+		*redis-cli -h host -p port -a password	:连接到远程带密码的 redis 服务
+		
+		db相关操作：  	0-15号
+		*select index
+		*move key db
+		
+		数据清除操作：
+		flushdb：清除当前库
+		flushall：清除所有库
+		dbsize：数据总量
+		
+		其他操作：
+		echo message：
+		ping：测试连通
+		quit：退出
+
+	   2.redis的数据结构
+		*redis存储的是:可以,value格式的数据,其中可以都是字符串.value有5中不同的数据结构
+		   *value的数据结构
+			1)字符串类型 string
+			2)哈希类型  hash  :map格式
+			3)列表类型  list  :linkedlist格式
+			4)集合类型  set   : 
+			5)有序集合类型  sortedset
+	
+	   3.键(类比于对象,没有键就没有键对应的数据)
+			设置约定:
+				表名:主键名:主键值:字段名
+				
+		
+		*del key
+		*exists key
+		*type key		返回key储存的值类型
+
+		*keys pattern		查找所有符合给定模式pattern的key
+			key*	
+
+		*setex key seconds   设置键并设置过期时间
+		*expire key seconds  	给键设置过期时间(s)
+		*persist key		移除key的过期时间,key将持久保持
+		
+		*ttl key 获取有效市场，-2：nil，-1：永久
+		
+		改名：
+		*rename key newkey		覆盖newkey
+		*renamenx key newkey	不覆盖newkey，返回 失败
+		
+		排序：
+		*sort
+		
+	   4.字符串类型 string
+		*set key value
+		*get key
+		
+		*incre key 自增
+		*decre key 自减
+		*decreby key num 自减num
+			string是字符串,当遇到增减类操作时会转成数值进行计算
+			
+	   5.哈希类型  hash
+			不允许嵌套,value只能是字符串
+		*hset key field value
+		*hget key field
+		*hgetall key
+		*hdel key field
+		*hsetnx key field value  (新建,若有则不进行改变)
+
+		*hkeys key 获取所有哈希表中的字段
+		*hvals key 获取哈希表所有域(field)的值
+		
+
+		*hincrby key field increment 为哈希表 key 中的指定字段的整数值加上增量 increment 
+		*hincrbyfloat key field increment 为哈希表 key 中的指定字段的浮点数值加上增量 increment 
+
+	   6.列表类型 list	//我猜是双向链表
+		*llen key 	获取列表长度
+		
+		*lpop key 	移出并获取列表的第一个元素
+		*rpop key	移除列表的最后一个元素，返回值为移除的元素
+
+		*lpush key value1 [value2] 	将一个或多个值插入到列表头	//按顺序插入
+		*rpush key value1 [value2] 	从列表尾添加一个或多个值
+		*lpushx key value 		将一个值插入到已存在的列表头部，列表不存在时操作无效。
+
+		*lrange key start stop 		获取列表指定范围内的元素 (-1代表最后一个)
+		*lindex key index 		通过索引获取列表中的元素
+		*lset key index value		通过索引设置列表中的元素
+
+		*lrem key count value		移除列表中与参数 VALUE 相等的元素。cout:0(删除所有)  <0(从列表尾开始搜索)  >0(从列表头开始)
+
+		*b*** 阻塞模式
+		
+		*BRPOPLPUSH source destination timeout 
+		从列表中弹出一个值，将弹出的元素插入到另外一个列表中并返回它； 如果列表没有元素会阻塞列表直到等待超时或发现可弹出元素为止
+	
+	  7.集合类型 set:	//通过哈希表实现
+		*sadd key member1 [member2]	向集合添加一个或多个成员
+		*srem key member1 [member2]	移除集合中一个或多个成员
+		*sismember key member 	判断 member 元素是否是集合 key 的成员
+
+		*scard key	获取集合的成员数
+		*smembers key 	返回集合中的所有成员
+		
+		*srandmember key count 随机获取count个
+		*spop key count 随机pop count个
+		
+		关系运算
+		*sunion key1 [key2]	返回所有给定集合的并集
+		*sinter key1 [key2] 	返回给定所有集合的交集
+		*sdiff key1 [key2] 	返回给定所有集合的差集	//类似于key1 - key1∪key2
+		关系运算并存储到指定集合
+		*sintersrore destination key1 [key2] 
+		*sunionstore destination key1 [key2]
+		*sdiffstore destination key1 [key2]
+
+		将 member 元素从 source 集合移动到 destination 集合
+		*smove source destination member 
+
+
+	  8.有序集合sorted set	//通过红黑树实现,每个元素都会关联一个double类型的分数(score)
+		*zadd key score1 member1 [score2 member2] 向有序集合添加一个或多个成员，或者更新已存在成员的分数
+		*zrem key member [member ...] 		移除有序集合中的一个或多个成员
+		*zrange key start stop [withscores] 通过索引区间返回有序集合指定区间内的成员
+
+		*zrevrange key start stop [withscores] 反向
+		
+		*zcard key 	获取有序集合的成员数
+		*zcount key min max 计算在有序集合中指定区间分数的成员数
+		
+		*zrangebyscore key min max [withscores] [limit]
+		*zrangebyrank key start stop 按索引删
+		*zremrangebyscore key min max 按分数删除
+		
+		*zrange key number 根据分数查排名
+		*zscore key number
+		*zincrby key increment member 增减分数
+		
+		关系运算
+		zinterstore destination numkeys key...	交
+		zunionstore destination numkeys key...	并
+==========================================================
+高级数据类型
+
+##Bitmaps
+	setbit key index 1
+	getbit key num
+	
+	bitop op destKey key1 key2...	PS:op(and,or,not,xor)
+	bitcount key [start end]	统计key中1的数量
+	
+##HyperLogLog
+	记录独立数据的数目(带有0.81%的误差)
+	添加:
+	pfadd key element [element]
+	统计:
+	pfcount key [key...]
+	合并:
+	pfmerge destkey sourcekey [sourcekey]
+	
+==========================================================
+
+	持久化机制:
+		1.RDB:默认方式
+		     *在一定的时间间隔中,检测key的变化情况,然后持久化数据
+			1.编辑redis.windows.conf文件
+				save 900 1
+				save 300 10
+				save 60  100000
+				 若在  S变化   次,则持久化一次
+		     *若改变了redis.window.conf文件,则在启动数据库服务时需要制定配置文件
+
+		2.AOF:日志记录方式,可以记录每一条命令的操作.可以每一次命令操作后,持续持久化数据
+			1.编辑配置文件
+				appendonly no/yes
+			
+				appendfsync always/everysec/no  每一次操作 / 每秒 / 不进行持久化
+==========================================================	
+				
+	事务：
+		开始事务：multi
+		提交事务：execu
+		取消事务：discard
+		
+		CAS：乐观锁
+		加锁：watch
+		取消锁：unwatch
+		
+		互斥锁：
+		加锁 setnx lock-key value
+		取消锁 del lock-key
+		
+		预防死锁 expire lock-key milliseconds
+		
+==========================================================
+redis删除策略
+	数据删除策略：
+		定时，惰性，定期
+
+	数据驱逐策略：
+	
+	
+
+==========================================================	
+	
+lua语言
+	Redis 支持两种方法运行脚本
+	它的命令格式为：
+	eval lua-script key-num [key1 key2 key3 ...] [value1 value2 value3 ...]
+	
+	val 代表执行 Lua 语言的命令。
+	Lua-script 代表 Lua 语言脚本。
+	key-num 整数代表参数中有多少个 key，需要注意的是 Redis 中 key 是从 1 开始的，如果没有 key 的参数，那么写 0。
+	[key1key2key3...] 是 key 作为参数传递给 Lua 语言，也可以不填它是 key 的参数，但是需要和 key-num 的个数对应起来。
+	[value1 value2 value3...] 这些参数传递给 Lua 语言，它们是可填可不填的。
+	
+	-------------------------------------------
+	例子：
+	eval "redis.call('set',KEYS[1],ARGV[1])" 1 lua-key lua-value
+
+	设置一个键值对，可以在 Lua 语言中采用 redis.call(command,key[param1,param2...]) 进行操作，其中：
+		command 是命令，包括 set、get、del 等。
+		Key 是被操作的键。
+		param1,param2...代表给 key 的参数。
+
+	脚本中的 KEYS[1] 代表读取传递给 Lua 脚本的第一个 key 参数，而 ARGV[1] 代表第一个非 key 参数。
+
+	这里共有一个 key 参数，所以填写的 key-num 为 1，这样 Redis 就知道 key-value 是 key 参数，
+	而 lua-value 是其他参数，它起到的是一种间隔的作用。
+	-------------------------------------------
+	
+	*有时可能需要多次执行同样一段脚本，这个时候可以使用 Redis 缓存脚本的功能，
+	在 Redis 中脚本会通过 SHA-1 签名算法加密脚本，然后返回一个标识字符串，
+	可以通过这个字符串执行加密后的脚本。
+	首先使用命令：
+	script load script
+	这个脚本的返回值是一个 SHA-1 签名过后的标识字符串，
+	
+	简单对象用jedis封装
+	// 缓存脚本，返回shal签名标识
+	String shal = jedis.scriptLoad("redis.call('set',KEYS[1], ARGV[1])");
+	// 通过标识执行脚本
+	jedis.evalsha(shal, 1, new String[] { "sha-key", "sha-val" });
+	// 获取执行脚本后的数据
+	String shaVal = jedis.get("sha-key");
+	--------------------------------------------------------------------------------------
+	
+	*存储对象考虑使用 Spring 提供的 RedisScript 接口，
+	实现类DefaultRedisScript
+	
+	ApplicationContext applicationContext = new ClassPathXmlApplicationContext(
+        "applicationContext.xml");
+	RedisTemplate redisTemplate = applicationContext.getBean(RedisTemplate.class);
+	// 定义默认脚本封装类
+	DefaultRedisScript<Role> redisScript = new DefaultRedisScript<Role>();
+	// 设置脚本
+	redisScript.setScriptText("redis.call('set',KEYS[1], ARGV[1]) return redis.call('get', KEYS[1])");
+	// 定义操作的key列表
+	List<String> keyList = new ArrayList<String>();
+	keyList.add("role1");
+	// 需要序列化保存和读取的对象
+	Role role = new Role();
+	role.setId(1L);
+	role.setRoleName("role_name_1");
+	role.setNote("note_1");
+	// 获得标识字符串
+	String sha1 = redisScript.getSha1();
+	System.out.println(sha1);
+	// 设置返回结果类型，如果没有这句话，结果返回为空
+	redisScript.setResultType(Role.class);
+	// 定义序列化器
+	JdkSerializationRedisSerializer serializer = new JdkSerializationRedisSerializer();
+	// 执行脚本
+	// 第一个是RedisScript接口对象，第二个是参数序列化器
+	// 第三个是结果序列化器，第四个是Reids的key列表，最后是其他参数列表
+	Role obj = (Role) redisTemplate.execute(redisScript, serializer,
+			serializer, keyList, role);
+	// 打印结果
+	System.out.println(obj);
+	--------------------------------------------------------------------------------------
+	
+	//读入文件流
+    File file = new File("G:\\dev\\redis\\test.lua");
+    byte[] bytes = getFileToByte(file);
+    Jedis jedis = (Jedis)redisTemplate.getConnectionFactory().getConnection().getNativeConnection();
+    //发送文件二进制给Redis,这样REdis就会返回shal标识
+    byte[] shal = jedis.scriptLoad(bytes);
+    //使用返回的标识执行，其中第二个参数2,表示使用2个键
+    //而后面的字符串都转化为了二进制字节进行传输
+    Object obj = jedis.evalsha(shal,2,  "key1".getBytes(),"key2".getBytes(),"2".getBytes(), "4".getBytes());
+    System.out.println(obj)
+
+==========================================================================================================
+
+   ##jedis:java中使用redis
+	使用步骤:
+	   1.导入jedis的jar包
+	   2.使用
+		1.获取连接
+			Jedis jedis = new Jedis("url",端口号);
+		2.操作
+			*方法名同redis中的关键字相同
+		3.关闭连接
+			jedis.close();
+	
+	
+
+
+  ##jedis连接池:  JedisPool
+	使用:	0.创建一个配置对象:
+			JedisPoolConfig config = new JedisPoolConfig();
+			config.setMaxTotal();
+			config.setMaxIdle();
+		1.创建JedisPool连接池对象
+			Jedispool jedispool = new Jedispool(config,host,post);
+		2.调用方法,获取连接(jedis对象)
+			Jedis jedis = Jedispool.getResource();
+		3.操作
+			jedis.方法();
+		4.关闭连接
+			jedis.close();
+	*连接池工具类
+========================================================================================================
+spring中使用redis：
+	好处：
+		封装有序列化类 使Java 对象和 Redis 的字符串进行相互转换
+		（序列化对象，从而直接存储到redis中，
+		  对象要可序列化，需要实现Serializable接口，往往要重写serialVersionUID）
+	步骤
+	1.配置Jedis.PollConfig对象
+	<bean id="poolConfig" class="redis.clients.jedis.JedisPoolConfig">
+		<!-- 最大空闲数 -->
+		<property name="maxIdle" value="50" />
+		<!-- 最大连接数 -->
+		<property name="maxTotal" value="100" />
+		<!-- 最大等待时间 -->
+		<property name="maxWaitMillis" value="20000" />
+	</bean>
+	
+	2.配置 JedisConnectionFactory
+	Spring Data Redis 方案中它提供了 4 种工厂模型。
+		JredisConnectionFactory。
+		JedisConnectionFactory。
+		LettuceConnectionFactory。
+		SrpConnectionFactory。
+		
+	<bean id="connectionFactory"
+		class="org.springframework.data.redis.connection.jedis.JedisConnectionFactory">
+		<property name="hostName" value="localhost" />
+		<property name="port" value="6379" />
+		<!--<property name="password" value="password"/> -->
+		<property name="poolConfig" ref="poolConfig" />
+	</bean>
+	
+	3.配置Spring序列化器
+	Spring 提供的方案去处理序列化，当然也可以去实现在 spring data redis 中定义的 RedisSerializer 接口，
+	在 Spring 中提供了以下几种实现 RedisSerializer 接口的序列化器。
+		GenericJackson2JsonRedisSerializer，通用的使用 Json2.jar 的包，将 Redis 对象的序列化器。
+		Jackson2JsonRedisSerializer<T>，通过 Jackson2.jar 包提供的序列化进行转换（由于版本太旧，Spring 不推荐使用）。
+		JdkSerializationRedisSerializer<T>，使用 JDK 的序列化器进行转化。
+		OxmSerializer，使用 Spring O/X 对象 Object 和 XML 相互转换。
+		StringRedisSerializer，使用字符串进行序列化。
+		GenericToStringSerializer，通过通用的字符串序列化进行相互转换。
+	键和值可以分别配置不同的序列化器
+	<bean id="jdkSerializationRedisSerializer"
+    class="org.springframework.data.redis.serializer.JdkSerializationRedisSerializer" />
+	<bean id="stringRedisSerializer"
+		class="org.springframework.data.redis.serializer.StringRedisSerializer" />
+		
+	<bean id="redisTemplate" class="org.springframework.data.redis.core.RedisTemplate">
+		<property name="connectionFactory" ref="connectionFactory" />
+		<property name="keySerializer" ref="stringRedisSerializer" />
+		<property name="valueSerializer" ref="jdkSerializationRedisSerializer" />
+	</bean>
+	
+	测试代码：
+	ApplicationContext applicationContext = new ClassPathXmlApplicationContext("applicationContext.xml");
+	RedisTemplate redisTemplate = applicationContext.getBean(RedisTemplate.class);
+	
+	Role role = new Role();
+	role.setId(1L);
+	role.setRoleName("role_name_1");
+	role.setNote ("note_l");
+	
+	redisTemplate.opsForValue().set("role_1", role);
+	Role role1 = (Role) redisTemplate.opsForValue().get ("role_1");
+
+	
+	为了使得所有的操作都来自于同一个连接，可以使用 
+	SessionCallback 或者 RedisCallback 这两个接口，
+	而 RedisCallback 是比较底层的封装，其使用不是很友好，
+	所以更多的时候会使用 SessionCallback 这个接口，
+	通过这个接口就可以把多个命令放入到同一个 Redis 连接中去执行
+	SessionCallback callBack = new SessionCallback<Role>() {
+		@Override
+		public Role execute(RedisOperations ops) throws DataAccessException {
+			ops.boundValueOps("role_1").set(role);
+			return (Role) ops.boundValueOps("role_1").get();
+		}
+	};
+    Role savedRole = (Role) redisTemplate.execute(callBack);
